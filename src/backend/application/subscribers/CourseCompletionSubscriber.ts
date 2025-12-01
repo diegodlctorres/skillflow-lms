@@ -1,7 +1,7 @@
-import { LessonCompletedEvent } from '../../domain/events/LessonCompletedEvent';
-import { CourseCompletedEvent } from '../../domain/events/CourseCompletedEvent';
-import { InMemoryEventBus } from '../../infrastructure/events/InMemoryEventBus';
-import { PrismaEnrollmentRepository } from '../../infrastructure/repositories/PrismaEnrollmentRepository';
+import { LessonCompletedEvent } from '../../domain/events/LessonCompletedEvent.js';
+import { CourseCompletedEvent } from '../../domain/events/CourseCompletedEvent.js';
+import { InMemoryEventBus } from '../../infrastructure/events/InMemoryEventBus.js';
+import { PrismaEnrollmentRepository } from '../../infrastructure/repositories/PrismaEnrollmentRepository.js';
 
 export class CourseCompletionSubscriber {
   constructor() {

@@ -1,6 +1,6 @@
-import { ICourseRepository } from '../../ports/ICourseRepository';
-import { Course } from '../../domain/Course';
-import { prisma } from '../prisma';
+import { ICourseRepository } from '../../ports/ICourseRepository.js';
+import { Course } from '../../domain/Course.js';
+import { prisma } from '../prisma.js';
 
 export class PrismaCourseRepository implements ICourseRepository {
   async findAll(): Promise<Course[]> {

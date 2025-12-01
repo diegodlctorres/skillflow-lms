@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { CourseController } from '../src/backend/infrastructure/controllers/CourseController';
+import { CourseController } from '../src/backend/infrastructure/controllers/CourseController.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {

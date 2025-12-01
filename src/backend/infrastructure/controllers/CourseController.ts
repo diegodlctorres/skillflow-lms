@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { PrismaCourseRepository } from '../repositories/PrismaCourseRepository';
+import { PrismaCourseRepository } from '../repositories/PrismaCourseRepository.js';
 
 const courseRepository = new PrismaCourseRepository();
 

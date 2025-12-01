@@ -1,6 +1,6 @@
-import { IEnrollmentRepository } from '../../ports/IEnrollmentRepository';
-import { Enrollment } from '../../domain/Enrollment';
-import { prisma } from '../prisma';
+import { IEnrollmentRepository } from '../../ports/IEnrollmentRepository.js';
+import { Enrollment } from '../../domain/Enrollment.js';
+import { prisma } from '../prisma.js';
 
 export class PrismaEnrollmentRepository implements IEnrollmentRepository {
   async findByStudentId(studentId: string): Promise<Enrollment[]> {

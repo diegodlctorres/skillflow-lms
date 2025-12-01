@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { PrismaEnrollmentRepository } from '../repositories/PrismaEnrollmentRepository';
-import { InMemoryEventBus } from '../events/InMemoryEventBus';
-import { LessonCompletedEvent } from '../../domain/events/LessonCompletedEvent';
+import { PrismaEnrollmentRepository } from '../repositories/PrismaEnrollmentRepository.js';
+import { InMemoryEventBus } from '../events/InMemoryEventBus.js';
+import { LessonCompletedEvent } from '../../domain/events/LessonCompletedEvent.js';
 
 const enrollmentRepository = new PrismaEnrollmentRepository();
 
