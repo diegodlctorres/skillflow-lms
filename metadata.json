@@ -1,0 +1,5 @@
+{
+  "name": "SkillFlow LMS",
+  "description": "A modern, hexagonal-ready learning management system frontend featuring a course catalog and video player.",
+  "requestFramePermissions": []
+}
