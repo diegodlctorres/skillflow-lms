@@ -1,5 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { PrismaEnrollmentRepository } from '../repositories/PrismaEnrollmentRepository';
+import { InMemoryEventBus } from '../events/InMemoryEventBus';
+import { LessonCompletedEvent } from '../../domain/events/LessonCompletedEvent';
 
 const enrollmentRepository = new PrismaEnrollmentRepository();
 
@@ -70,6 +72,12 @@ export class EnrollmentController {
         const progress = Math.round((newCompleted.length / totalLessons) * 100);
         
         const updated = await enrollmentRepository.updateProgress(studentId, courseId, newCompleted, progress);
+        
+        // Publish Domain Event
+        const eventBus = InMemoryEventBus.getInstance();
+        const event = new LessonCompletedEvent(studentId, courseId, lessonId);
+        await eventBus.publish(event);
+
         return res.status(200).json({ data: updated, error: null });
       }
 

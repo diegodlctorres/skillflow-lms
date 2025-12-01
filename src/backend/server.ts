@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import { CourseController } from './infrastructure/controllers/CourseController';
 import { EnrollmentController } from './infrastructure/controllers/EnrollmentController';
+import { CourseCompletionSubscriber } from './application/subscribers/CourseCompletionSubscriber';
+
+// Initialize Subscribers
+new CourseCompletionSubscriber();
 
 const app = express();
 const PORT = 3001;
