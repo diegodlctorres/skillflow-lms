@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Compass, ChevronRight, AlertCircle, ArrowLeft, LogOut, User as UserIcon, CheckCircle } from 'lucide-react';
+import { Layout, Compass, ChevronRight, AlertCircle, ArrowLeft, LogOut, User as UserIcon, CheckCircle, BookOpen } from 'lucide-react';
 import { Course, Lesson, Enrollment } from './types';
 import { courseService } from './services/courseService';
 import { enrollmentService } from './services/enrollmentService';
@@ -11,7 +11,7 @@ import { LessonList } from './components/LessonList';
 import { Toaster, toast } from 'sonner';
 
 // --- Header ---
-const Header: React.FC = () => {
+const Header: React.FC<{ onNavigate: (view: 'catalog' | 'my-learning') => void }> = ({ onNavigate }) => {
   const { user, login, logout, isLoading } = useAuth();
 
   return (
@@ -26,10 +26,10 @@ const Header: React.FC = () => {
           </span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <a href="#" className="text-primary-600 flex items-center gap-2">
+          <button onClick={() => onNavigate('catalog')} className="text-primary-600 flex items-center gap-2 hover:text-primary-700 transition-colors">
             <Compass size={18} /> Catálogo
-          </a>
-          <a href="#" className="hover:text-slate-900 transition-colors">Mi Aprendizaje</a>
+          </button>
+          <button onClick={() => onNavigate('my-learning')} className="hover:text-slate-900 transition-colors">Mi Aprendizaje</button>
         </nav>
         <div className="flex items-center gap-3">
           {user ? (
@@ -144,6 +144,84 @@ const CatalogView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSel
           })
         )}
       </div>
+    </div>
+  );
+};
+
+// --- View: My Learning ---
+const MyLearningView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSelectCourse }) => {
+  const { user } = useAuth();
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      const { data: coursesData } = await courseService.getAllCourses();
+      const { data: enrollmentData } = await enrollmentService.getStudentEnrollments(user.id);
+
+      if (coursesData && enrollmentData) {
+        const userCourseIds = enrollmentData.map(e => e.courseId);
+        const filtered = coursesData.filter(c => userCourseIds.includes(c.id));
+        setEnrolledCourses(filtered);
+        setEnrollments(enrollmentData);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-bold text-slate-900">Inicia sesión para ver tu aprendizaje</h2>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Mi Aprendizaje</h1>
+        <p className="text-slate-500 mt-2 text-lg">Continúa donde lo dejaste.</p>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm h-96 flex flex-col gap-4">
+              <Skeleton className="h-48 w-full rounded-lg" />
+              <Skeleton className="h-6 w-3/4" />
+            </div>
+          ))}
+        </div>
+      ) : enrolledCourses.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
+          <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen size={32} className="text-slate-400" />
+          </div>
+          <h3 className="text-lg font-medium text-slate-900">No estás inscrito en ningún curso</h3>
+          <p className="text-slate-500 mt-2">Explora el catálogo para empezar a aprender.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {enrolledCourses.map(course => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              enrollment={enrollments.find(e => e.courseId === course.id) || null}
+              onClick={onSelectCourse}
+              onEnroll={() => { }}
+              isEnrolling={false}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -294,7 +372,7 @@ const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ course
 
 // --- App Wrapper ---
 const AppContent: React.FC = () => {
-  const [view, setView] = useState<'catalog' | 'player'>('catalog');
+  const [view, setView] = useState<'catalog' | 'player' | 'my-learning'>('catalog');
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   const handleSelectCourse = (id: string) => {
@@ -310,10 +388,12 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header />
+      <Header onNavigate={setView} />
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {view === 'catalog' ? (
           <CatalogView onSelectCourse={handleSelectCourse} />
+        ) : view === 'my-learning' ? (
+          <MyLearningView onSelectCourse={handleSelectCourse} />
         ) : selectedCourseId ? (
           <PlayerView courseId={selectedCourseId} onBack={handleBackToCatalog} />
         ) : (

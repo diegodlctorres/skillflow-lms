@@ -60,22 +60,27 @@ export const courseService = {
    * Fetch all available courses.
    */
   async getAllCourses(): Promise<ServiceResponse<Course[]>> {
-    await simulateNetworkDelay();
-    // Simulate randomness or errors here if needed for testing
-    return { data: MOCK_COURSES, error: null };
+    try {
+      const response = await fetch('/api/courses');
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      return { data: null, error: 'Error al cargar cursos' };
+    }
   },
 
   /**
    * Fetch a single course by ID.
    */
   async getCourseById(courseId: string): Promise<ServiceResponse<Course>> {
-    await simulateNetworkDelay(500); // Faster than full list
-    const course = MOCK_COURSES.find(c => c.id === courseId);
-    
-    if (!course) {
-      return { data: null, error: 'Curso no encontrado' };
+    try {
+      const response = await fetch(`/api/courses?id=${courseId}`);
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      return { data: null, error: 'Error al cargar el curso' };
     }
-    
-    return { data: course, error: null };
   }
 };

@@ -5,18 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "tsx watch src/backend/server.ts",
     "build": "vite build",
     "preview": "vite preview"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "lucide-react": "0.263.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "lucide-react": "0.263.1",
     "sonner": "1.4.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.19.1",
+    "@vercel/node": "^5.5.13",
     "@vitejs/plugin-react": "^5.0.0",
+    "prisma": "^5.22.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  avatarUrl   String
+  enrollments Enrollment[]
+}
+
+model Course {
+  id            String       @id @default(uuid())
+  title         String
+  description   String
+  instructor    String
+  thumbnailUrl  String
+  level         String
+  totalDuration String
+  studentsCount Int          @default(0)
+  updatedAt     DateTime     @updatedAt
+  lessons       Lesson[]
+  enrollments   Enrollment[]
+}
+
+model Lesson {
+  id        String   @id @default(uuid())
+  title     String
+  duration  String
+  videoId   String
+  isLocked  Boolean  @default(false)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+}
+
+model Enrollment {
+  id               String   @id @default(uuid())
+  studentId        String
+  student          User     @relation(fields: [studentId], references: [id])
+  courseId         String
+  course           Course   @relation(fields: [courseId], references: [id])
+  completedLessons String[] // Storing as array of strings for simplicity (Postgres supports this)
+  progress         Int      @default(0)
+  enrolledAt       DateTime @default(now())
+  lastAccessedAt   DateTime @default(now())
+
+  @@unique([studentId, courseId])
+}
