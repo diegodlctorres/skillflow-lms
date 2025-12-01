@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "tsx watch src/backend/server.ts",
+    "test": "jest",
     "build": "prisma generate && vite build",
     "preview": "vite preview"
   },
@@ -24,10 +25,13 @@
     "sonner": "1.4.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.19.1",
     "@vercel/node": "^5.5.13",
     "@vitejs/plugin-react": "^5.0.0",
+    "jest": "^30.2.0",
     "prisma": "^5.22.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

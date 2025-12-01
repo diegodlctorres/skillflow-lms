@@ -57,6 +57,70 @@ async function main() {
       lessons: [
         { id: 'l3-1', title: 'Fundamentos Utility-First', duration: '06:15', videoId: 'mr15Xzb1Ook', isLocked: false },
       ]
+    },
+    {
+      id: 'c4',
+      title: 'Node.js: De Cero a Experto',
+      description: 'Aprende Node.js desde las bases hasta el despliegue. Express, MongoDB, JWT y WebSockets.',
+      instructor: 'Fernando Herrera',
+      thumbnailUrl: 'https://picsum.photos/id/60/800/600',
+      level: 'Intermedio',
+      totalDuration: '12h 30m',
+      studentsCount: 2100,
+      updatedAt: new Date('2023-11-10'),
+      lessons: [
+        { id: 'l4-1', title: 'Introducción a Node.js', duration: '08:00', videoId: 'yEHCfRWz-EI', isLocked: false },
+        { id: 'l4-2', title: 'File System y Streams', duration: '15:30', videoId: 'U8XF6AFGqlc', isLocked: false },
+        { id: 'l4-3', title: 'Rest API con Express', duration: '20:00', videoId: 'GGTKTspKse0', isLocked: true },
+      ]
+    },
+    {
+      id: 'c5',
+      title: 'Python para Data Science',
+      description: 'Domina el análisis de datos con Python, Pandas, Matplotlib y Seaborn. Introducción a Machine Learning.',
+      instructor: 'Midudev',
+      thumbnailUrl: 'https://picsum.photos/id/100/800/600',
+      level: 'Principiante',
+      totalDuration: '8h 00m',
+      studentsCount: 1500,
+      updatedAt: new Date('2023-10-05'),
+      lessons: [
+        { id: 'l5-1', title: 'Variables y Tipos de Datos', duration: '10:00', videoId: 'Kp4Mvapo5kc', isLocked: false },
+        { id: 'l5-2', title: 'Introducción a Pandas', duration: '18:45', videoId: 'gtjxAH8uaDs', isLocked: false },
+        { id: 'l5-3', title: 'Visualización de Datos', duration: '14:20', videoId: 'a9UrKTVEeZA', isLocked: true },
+      ]
+    },
+    {
+      id: 'c6',
+      title: 'Diseño UI/UX Moderno',
+      description: 'Aprende a diseñar interfaces hermosas y funcionales. Teoría del color, tipografía y prototipado en Figma.',
+      instructor: 'Laura Silva',
+      thumbnailUrl: 'https://picsum.photos/id/180/800/600',
+      level: 'Principiante',
+      totalDuration: '5h 15m',
+      studentsCount: 3200,
+      updatedAt: new Date('2023-09-15'),
+      lessons: [
+        { id: 'l6-1', title: 'Introducción al Diseño UI', duration: '12:00', videoId: 'c9Wg6Cb_YlU', isLocked: false },
+        { id: 'l6-2', title: 'Psicología del Color', duration: '09:30', videoId: 'AvgCkHrcj90', isLocked: false },
+        { id: 'l6-3', title: 'Prototipado en Figma', duration: '25:00', videoId: '4W4LvNYpAnY', isLocked: true },
+      ]
+    },
+    {
+      id: 'c7',
+      title: 'DevOps con Docker y Kubernetes',
+      description: 'Automatiza tus despliegues. Contenedores, orquestación, CI/CD pipelines y monitoreo.',
+      instructor: 'Nana Janashia',
+      thumbnailUrl: 'https://picsum.photos/id/250/800/600',
+      level: 'Avanzado',
+      totalDuration: '10h 45m',
+      studentsCount: 950,
+      updatedAt: new Date('2023-11-20'),
+      lessons: [
+        { id: 'l7-1', title: '¿Qué es Docker?', duration: '15:00', videoId: 'fqMOX6JJhGo', isLocked: false },
+        { id: 'l7-2', title: 'Creando tu primer contenedor', duration: '12:00', videoId: 'gAkwW2tuIqE', isLocked: false },
+        { id: 'l7-3', title: 'Arquitectura de Kubernetes', duration: '22:15', videoId: 's_o8dwzRlu4', isLocked: true },
+      ]
     }
   ];
 
