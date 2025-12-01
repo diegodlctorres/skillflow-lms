@@ -2,7 +2,7 @@ import { User, ServiceResponse } from '../types';
 
 const MOCK_USER: User = {
   id: 'student-1',
-  name: 'Alex Dev',
+  name: 'Alejandro Dev',
   email: 'alex@skillflow.com',
   avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
 };

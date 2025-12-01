@@ -52,7 +52,7 @@ export const enrollmentService = {
     // Check if already enrolled
     const existing = allEnrollments.find(e => e.studentId === studentId && e.courseId === courseId);
     if (existing) {
-      return { data: existing, error: 'Already enrolled' };
+      return { data: existing, error: 'Ya estás inscrito' };
     }
 
     const newEnrollment: Enrollment = {
@@ -81,7 +81,7 @@ export const enrollmentService = {
     const index = allEnrollments.findIndex(e => e.studentId === studentId && e.courseId === course.id);
 
     if (index === -1) {
-      return { data: null, error: 'Enrollment not found' };
+      return { data: null, error: 'Inscripción no encontrada' };
     }
 
     const enrollment = allEnrollments[index];

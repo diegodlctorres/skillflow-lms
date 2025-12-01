@@ -13,7 +13,7 @@ export interface Course {
   description: string;
   instructor: string;
   thumbnailUrl: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  level: 'Principiante' | 'Intermedio' | 'Avanzado';
   totalDuration: string;
   studentsCount: number;
   lessons: Lesson[];
