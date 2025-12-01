@@ -10,20 +10,20 @@ interface LessonListProps {
   isEnrolled: boolean;
 }
 
-export const LessonList: React.FC<LessonListProps> = ({ 
-  lessons, 
-  currentLessonId, 
-  completedLessonIds, 
+export const LessonList: React.FC<LessonListProps> = ({
+  lessons,
+  currentLessonId,
+  completedLessonIds,
   onSelectLesson,
   isEnrolled
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
       <div className="p-4 border-b border-slate-100 bg-slate-50">
-        <h3 className="font-semibold text-slate-800">Course Content</h3>
-        <p className="text-xs text-slate-500 mt-1">{lessons.length} lessons</p>
+        <h3 className="font-semibold text-slate-800">Contenido del Curso</h3>
+        <p className="text-xs text-slate-500 mt-1">{lessons.length} lecciones</p>
       </div>
-      
+
       <div className="overflow-y-auto flex-grow">
         {lessons.map((lesson, index) => {
           const isActive = lesson.id === currentLessonId;
@@ -31,7 +31,7 @@ export const LessonList: React.FC<LessonListProps> = ({
           // Unlock if it's the first lesson, OR previous lesson is completed, OR the lesson itself is completed
           // Simplified: Logic for locking can be complex. For now, rely on lesson.isLocked from mock OR allow all if enrolled.
           // Let's stick to the visual representation requested.
-          const isLocked = !isEnrolled && lesson.isLocked; 
+          const isLocked = !isEnrolled && lesson.isLocked;
 
           return (
             <button
@@ -56,7 +56,7 @@ export const LessonList: React.FC<LessonListProps> = ({
                   </span>
                 )}
               </div>
-              
+
               <div className="flex-grow">
                 <h4 className={`text-sm font-medium ${isActive ? 'text-primary-700' : 'text-slate-700'}`}>
                   {lesson.title}

@@ -27,32 +27,32 @@ const Header: React.FC = () => {
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
           <a href="#" className="text-primary-600 flex items-center gap-2">
-            <Compass size={18} /> Catalog
+            <Compass size={18} /> Catálogo
           </a>
-          <a href="#" className="hover:text-slate-900 transition-colors">My Learning</a>
+          <a href="#" className="hover:text-slate-900 transition-colors">Mi Aprendizaje</a>
         </nav>
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-4">
-               <div className="flex items-center gap-2">
-                 <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full border border-slate-200" />
-                 <span className="text-sm font-medium text-slate-700 hidden sm:block">{user.name}</span>
-               </div>
-               <button 
+              <div className="flex items-center gap-2">
+                <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full border border-slate-200" />
+                <span className="text-sm font-medium text-slate-700 hidden sm:block">{user.name}</span>
+              </div>
+              <button
                 onClick={logout}
                 className="text-slate-400 hover:text-slate-900 transition-colors p-2"
                 title="Logout"
-               >
-                 <LogOut size={18} />
-               </button>
+              >
+                <LogOut size={18} />
+              </button>
             </div>
           ) : (
-            <button 
+            <button
               onClick={login}
               disabled={isLoading}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-70"
             >
-              {isLoading ? 'Logging in...' : <><UserIcon size={16} /> Guest Mode</>}
+              {isLoading ? 'Iniciando sesión...' : <><UserIcon size={16} /> Modo Invitado</>}
             </button>
           )}
         </div>
@@ -73,14 +73,14 @@ const CatalogView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSel
     const fetchData = async () => {
       setLoading(true);
       const { data: coursesData } = await courseService.getAllCourses();
-      
+
       if (coursesData) {
         setCourses(coursesData);
         if (user) {
           const { data: enrollmentData } = await enrollmentService.getStudentEnrollments(user.id);
           if (enrollmentData) setEnrollments(enrollmentData);
         } else {
-            setEnrollments([]);
+          setEnrollments([]);
         }
       }
       setLoading(false);
@@ -90,21 +90,21 @@ const CatalogView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSel
 
   const handleEnroll = async (courseId: string) => {
     if (!user) {
-      toast.error('Please login to enroll in courses');
+      toast.error('Por favor inicia sesión para inscribirte');
       await login();
       return;
     }
 
     setEnrollingId(courseId);
     const { data, error } = await enrollmentService.enroll(user.id, courseId);
-    
+
     if (data) {
       setEnrollments(prev => [...prev, data]);
-      toast.success('Enrollment Successful!', {
-        description: 'You can now start learning.'
+      toast.success('¡Inscripción Exitosa!', {
+        description: 'Ahora puedes empezar a aprender.'
       });
     } else {
-      toast.error('Enrollment Failed', { description: error });
+      toast.error('Inscripción Fallida', { description: error });
     }
     setEnrollingId(null);
   };
@@ -112,8 +112,8 @@ const CatalogView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSel
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Explore Courses</h1>
-        <p className="text-slate-500 mt-2 text-lg">Master new skills with our expert-led pathways.</p>
+        <h1 className="text-3xl font-bold text-slate-900">Explorar Cursos</h1>
+        <p className="text-slate-500 mt-2 text-lg">Domina nuevas habilidades con nuestras rutas guiadas por expertos.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -132,11 +132,11 @@ const CatalogView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSel
           courses.map(course => {
             const enrollment = enrollments.find(e => e.courseId === course.id) || null;
             return (
-              <CourseCard 
-                key={course.id} 
-                course={course} 
+              <CourseCard
+                key={course.id}
+                course={course}
                 enrollment={enrollment}
-                onClick={onSelectCourse} 
+                onClick={onSelectCourse}
                 onEnroll={handleEnroll}
                 isEnrolling={enrollingId === course.id}
               />
@@ -161,7 +161,7 @@ const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ course
     const fetchContext = async () => {
       setLoading(true);
       const { data: courseData } = await courseService.getCourseById(courseId);
-      
+
       if (courseData) {
         setCourse(courseData);
         // Default to first lesson
@@ -185,15 +185,15 @@ const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ course
 
   const handleMarkComplete = async () => {
     if (!user || !course || !activeLesson) return;
-    
+
     setMarkingComplete(true);
     const { data } = await enrollmentService.markLessonAsCompleted(user.id, course, activeLesson.id);
-    
+
     if (data) {
-        setEnrollment(data);
-        toast.success('Lesson Completed!', {
-            description: `Progress saved: ${data.progress}%`
-        });
+      setEnrollment(data);
+      toast.success('¡Lección Completada!', {
+        description: `Progreso guardado: ${data.progress}%`
+      });
     }
     setMarkingComplete(false);
   };
@@ -210,18 +210,18 @@ const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ course
     );
   }
 
-  if (!course || !activeLesson) return <div>Course not found</div>;
+  if (!course || !activeLesson) return <div>Curso no encontrado</div>;
 
   const isLessonCompleted = enrollment?.completedLessons.includes(activeLesson.id);
 
   return (
     <div>
       <div className="flex items-center gap-2 mb-6 text-sm text-slate-500">
-        <button 
-          onClick={onBack} 
+        <button
+          onClick={onBack}
           className="flex items-center gap-1 hover:text-primary-600 transition-colors font-medium"
         >
-          <ArrowLeft size={16} /> Back to Catalog
+          <ArrowLeft size={16} /> Volver al Catálogo
         </button>
         <ChevronRight size={14} className="text-slate-300" />
         <span className="text-slate-900 truncate">{course.title}</span>
@@ -231,56 +231,56 @@ const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ course
         {/* Main Content: Player */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-slate-900 rounded-2xl p-1 shadow-xl relative">
-             <VideoPlayer videoId={activeLesson.videoId} title={activeLesson.title} />
+            <VideoPlayer videoId={activeLesson.videoId} title={activeLesson.title} />
           </div>
-          
-          <div className="flex items-start justify-between gap-4">
-             <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-slate-900">{activeLesson.title}</h1>
-                <div className="flex items-center gap-4 text-sm text-slate-500">
-                    <span className="font-medium text-primary-600">{course.instructor}</span>
-                    <span>•</span>
-                    <span>Lesson {course.lessons.findIndex(l => l.id === activeLesson.id) + 1} of {course.lessons.length}</span>
-                </div>
-             </div>
 
-             {/* Action Area */}
-             {enrollment && (
-                 <button
-                    onClick={handleMarkComplete}
-                    disabled={isLessonCompleted || markingComplete}
-                    className={`
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-slate-900">{activeLesson.title}</h1>
+              <div className="flex items-center gap-4 text-sm text-slate-500">
+                <span className="font-medium text-primary-600">{course.instructor}</span>
+                <span>•</span>
+                <span>Lección {course.lessons.findIndex(l => l.id === activeLesson.id) + 1} de {course.lessons.length}</span>
+              </div>
+            </div>
+
+            {/* Action Area */}
+            {enrollment && (
+              <button
+                onClick={handleMarkComplete}
+                disabled={isLessonCompleted || markingComplete}
+                className={`
                         flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
-                        ${isLessonCompleted 
-                            ? 'bg-green-100 text-green-700 cursor-default' 
-                            : 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md'
-                        }
+                        ${isLessonCompleted
+                    ? 'bg-green-100 text-green-700 cursor-default'
+                    : 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md'
+                  }
                     `}
-                 >
-                    {markingComplete ? (
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : isLessonCompleted ? (
-                        <CheckCircle size={18} />
-                    ) : (
-                        <div className="w-4 h-4 rounded-full border-2 border-white/40" />
-                    )}
-                    {isLessonCompleted ? 'Completed' : 'Mark as Completed'}
-                 </button>
-             )}
+              >
+                {markingComplete ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : isLessonCompleted ? (
+                  <CheckCircle size={18} />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                )}
+                {isLessonCompleted ? 'Completado' : 'Marcar como Completado'}
+              </button>
+            )}
           </div>
 
           <div className="prose prose-slate max-w-none pt-6 border-t border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">About this lesson</h3>
-              <p className="text-slate-600">
-                In this lesson, we will cover the fundamental concepts required to move forward in the {course.title} curriculum.
-              </p>
+            <h3 className="text-lg font-semibold text-slate-900">Sobre esta lección</h3>
+            <p className="text-slate-600">
+              En esta lección, cubriremos los conceptos fundamentales requeridos para avanzar en el currículo de {course.title}.
+            </p>
           </div>
         </div>
 
         {/* Sidebar: Lesson List */}
         <div className="lg:col-span-1 lg:sticky lg:top-24 h-[calc(100vh-8rem)]">
-          <LessonList 
-            lessons={course.lessons} 
+          <LessonList
+            lessons={course.lessons}
             currentLessonId={activeLesson.id}
             completedLessonIds={enrollment?.completedLessons || []}
             onSelectLesson={handleLessonChange}
@@ -313,11 +313,11 @@ const AppContent: React.FC = () => {
       <Header />
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {view === 'catalog' ? (
-            <CatalogView onSelectCourse={handleSelectCourse} />
+          <CatalogView onSelectCourse={handleSelectCourse} />
         ) : selectedCourseId ? (
-            <PlayerView courseId={selectedCourseId} onBack={handleBackToCatalog} />
+          <PlayerView courseId={selectedCourseId} onBack={handleBackToCatalog} />
         ) : (
-            <CatalogView onSelectCourse={handleSelectCourse} />
+          <CatalogView onSelectCourse={handleSelectCourse} />
         )}
       </main>
     </div>
@@ -327,8 +327,8 @@ const AppContent: React.FC = () => {
 export default function App() {
   return (
     <AuthProvider>
-        <Toaster position="top-center" richColors duration={2000} closeButton />
-        <AppContent />
+      <Toaster position="top-center" richColors duration={2000} closeButton />
+      <AppContent />
     </AuthProvider>
   );
 }
