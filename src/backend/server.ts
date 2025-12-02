@@ -3,6 +3,7 @@ import cors from 'cors';
 import { CourseController } from './infrastructure/controllers/CourseController';
 import { EnrollmentController } from './infrastructure/controllers/EnrollmentController';
 import { UserController } from './infrastructure/controllers/UserController';
+import { CertificateController } from './infrastructure/controllers/CertificateController';
 import { CourseCompletionSubscriber } from './application/subscribers/CourseCompletionSubscriber';
 
 // Initialize Subscribers
@@ -47,6 +48,11 @@ app.post('/api/enrollments', async (req, res) => {
 // Users Routes
 app.post('/api/users', async (req, res) => {
   await UserController.syncUser(adaptRequest(req), adaptResponse(res));
+});
+
+// Certificate Routes
+app.get('/api/certificates/download', async (req, res) => {
+  await CertificateController.download(adaptRequest(req), adaptResponse(res));
 });
 
 app.listen(PORT, () => {

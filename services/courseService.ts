@@ -82,5 +82,31 @@ export const courseService = {
       console.error('Error fetching course:', error);
       return { data: null, error: 'Error al cargar el curso' };
     }
+  },
+
+  /**
+   * Download course certificate.
+   */
+  async downloadCertificate(courseId: string, studentId: string): Promise<void> {
+    try {
+      const response = await fetch(`/api/certificates/download?courseId=${courseId}&studentId=${studentId}`);
+      
+      if (!response.ok) {
+        throw new Error('Error downloading certificate');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `certificado-${courseId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      throw error;
+    }
   }
 };
