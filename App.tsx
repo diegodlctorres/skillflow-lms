@@ -8,11 +8,12 @@ import { CourseCard } from './components/CourseCard';
 import { Skeleton } from './components/Skeleton';
 import { VideoPlayer } from './components/VideoPlayer';
 import { LessonList } from './components/LessonList';
+import { LoginModal } from './components/LoginModal';
 import { Toaster, toast } from 'sonner';
 
 // --- Header ---
-const Header: React.FC<{ onNavigate: (view: 'catalog' | 'my-learning') => void }> = ({ onNavigate }) => {
-  const { user, login, logout, isLoading } = useAuth();
+const Header: React.FC<{ onNavigate: (view: 'catalog' | 'my-learning') => void; onLogin: () => void }> = ({ onNavigate, onLogin }) => {
+  const { user, logout, isLoading } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
@@ -48,11 +49,11 @@ const Header: React.FC<{ onNavigate: (view: 'catalog' | 'my-learning') => void }
             </div>
           ) : (
             <button
-              onClick={login}
+              onClick={onLogin}
               disabled={isLoading}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-70"
             >
-              {isLoading ? 'Iniciando sesión...' : <><UserIcon size={16} /> Modo Invitado</>}
+              {isLoading ? 'Cargando...' : <><UserIcon size={16} /> Iniciar Sesión</>}
             </button>
           )}
         </div>
@@ -374,6 +375,7 @@ const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ course
 const AppContent: React.FC = () => {
   const [view, setView] = useState<'catalog' | 'player' | 'my-learning'>('catalog');
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleSelectCourse = (id: string) => {
     setSelectedCourseId(id);
@@ -388,7 +390,8 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header onNavigate={setView} />
+      <Header onNavigate={setView} onLogin={() => setIsLoginOpen(true)} />
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {view === 'catalog' ? (
           <CatalogView onSelectCourse={handleSelectCourse} />
