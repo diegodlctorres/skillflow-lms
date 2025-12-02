@@ -1,6 +1,6 @@
 import React from 'react';
 import { Course, Enrollment } from '../types';
-import { BookOpen, Users, Clock, PlayCircle, PlusCircle } from 'lucide-react';
+import { BookOpen, Users, Clock, PlayCircle, PlusCircle, CheckCircle } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
@@ -75,10 +75,17 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
           {/* Action Button */}
           {enrollment ? (
-            <button className="w-full py-2 bg-primary-50 text-primary-700 text-sm font-semibold rounded-lg hover:bg-primary-100 transition-colors flex items-center justify-center gap-2">
-              <PlayCircle size={16} />
-              Continuar Aprendiendo ({enrollment.progress}%)
-            </button>
+            enrollment.progress === 100 ? (
+              <button className="w-full py-2 bg-green-50 text-green-700 text-sm font-semibold rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center gap-2 cursor-default">
+                <CheckCircle size={16} />
+                ¡Completado!
+              </button>
+            ) : (
+              <button className="w-full py-2 bg-primary-50 text-primary-700 text-sm font-semibold rounded-lg hover:bg-primary-100 transition-colors flex items-center justify-center gap-2">
+                <PlayCircle size={16} />
+                Continuar Aprendiendo ({enrollment.progress}%)
+              </button>
+            )
           ) : (
             <button
               onClick={handleEnrollClick}
