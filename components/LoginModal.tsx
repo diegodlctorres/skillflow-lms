@@ -14,9 +14,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     if (!isOpen) return null;
+
+    const toggleMode = () => {
+        setIsRegistering(!isRegistering);
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,12 +32,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
         try {
             if (isRegistering) {
+                if (password !== confirmPassword) {
+                    toast.error('Las contraseñas no coinciden');
+                    setIsLoading(false);
+                    return;
+                }
                 await authService.register({ email, password });
                 toast.success('¡Registro exitoso!', {
                     description: 'Por favor revisa tu correo para confirmar tu cuenta antes de iniciar sesión.',
                     duration: 5000,
                 });
-                setIsRegistering(false);
+                toggleMode();
             } else {
                 await login({ email, password });
                 toast.success('¡Bienvenido de nuevo!');
@@ -88,6 +101,24 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                         </div>
                     </div>
 
+                    {isRegistering && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">Confirmar Contraseña</label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                                <input
+                                    type="password"
+                                    required
+                                    minLength={6}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     <button
                         type="submit"
                         disabled={isLoading}
@@ -122,7 +153,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
                     <button
                         type="button"
-                        onClick={() => setIsRegistering(!isRegistering)}
+                        onClick={toggleMode}
                         className="w-full py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                     >
                         {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
