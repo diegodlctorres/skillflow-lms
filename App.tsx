@@ -85,6 +85,9 @@ const DocumentHub: React.FC<{ documents: MarkdownDocument[] }> = ({
                             <h1 className="text-lg font-semibold tracking-tight">
                                 Regulatorios &amp; Contabilidad
                             </h1>
+                            <p className="mt-0.5 text-[11px] font-medium text-slate-400">
+                                Versión de publicación 2.0.1
+                            </p>
                         </div>
                     </div>
                     <div className="hidden items-center gap-2 text-xs text-slate-400 sm:flex">
