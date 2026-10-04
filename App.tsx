@@ -1,417 +1,214 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Compass, ChevronRight, AlertCircle, ArrowLeft, LogOut, User as UserIcon, CheckCircle, BookOpen } from 'lucide-react';
-import { Course, Lesson, Enrollment } from './types';
-import { courseService } from './services/courseService';
-import { enrollmentService } from './services/enrollmentService';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { CourseCard } from './components/CourseCard';
-import { Skeleton } from './components/Skeleton';
-import { VideoPlayer } from './components/VideoPlayer';
-import { LessonList } from './components/LessonList';
-import { LoginModal } from './components/LoginModal';
-import { Toaster, toast } from 'sonner';
+import React, { useState } from "react";
+import {
+    Check,
+    Command,
+    Copy,
+    FileText,
+    FolderOpen,
+    Menu,
+    Search,
+    X,
+} from "lucide-react";
+import { Toaster, toast } from "sonner";
 
-// --- Header ---
-const Header: React.FC<{ onNavigate: (view: 'catalog' | 'my-learning') => void; onLogin: () => void }> = ({ onNavigate, onLogin }) => {
-  const { user, logout, isLoading } = useAuth();
-
-  return (
-    <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="bg-primary-600 text-white p-1.5 rounded-lg">
-            <Layout size={20} strokeWidth={2.5} />
-          </div>
-          <span className="font-bold text-xl tracking-tight text-slate-900">
-            SkillFlow<span className="text-primary-600">.</span>
-          </span>
-        </div>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <button onClick={() => onNavigate('catalog')} className="text-primary-600 flex items-center gap-2 hover:text-primary-700 transition-colors">
-            <Compass size={18} /> Catálogo
-          </button>
-          <button onClick={() => onNavigate('my-learning')} className="hover:text-slate-900 transition-colors">Mi Aprendizaje</button>
-        </nav>
-        <div className="flex items-center gap-3">
-          {user ? (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full border border-slate-200" />
-                <span className="text-sm font-medium text-slate-700 hidden sm:block">{user.name}</span>
-              </div>
-              <button
-                onClick={logout}
-                className="text-slate-400 hover:text-slate-900 transition-colors p-2"
-                title="Logout"
-              >
-                <LogOut size={18} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={onLogin}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-70"
-            >
-              {isLoading ? 'Cargando...' : <><UserIcon size={16} /> Iniciar Sesión</>}
-            </button>
-          )}
-        </div>
-      </div>
-    </header>
-  );
+type MarkdownDocument = {
+    name: string;
+    content: string;
 };
 
-// --- View: Catalog ---
-const CatalogView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSelectCourse }) => {
-  const { user, login } = useAuth();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [enrollingId, setEnrollingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const { data: coursesData } = await courseService.getAllCourses();
-
-      if (coursesData) {
-        setCourses(coursesData);
-        if (user) {
-          const { data: enrollmentData } = await enrollmentService.getStudentEnrollments(user.id);
-          if (enrollmentData) setEnrollments(enrollmentData);
-        } else {
-          setEnrollments([]);
-        }
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, [user]);
-
-  const handleEnroll = async (courseId: string) => {
-    if (!user) {
-      toast.error('Por favor inicia sesión para inscribirte');
-      await login();
-      return;
-    }
-
-    setEnrollingId(courseId);
-    const { data, error } = await enrollmentService.enroll(user.id, courseId);
-
-    if (data) {
-      setEnrollments(prev => [...prev, data]);
-      toast.success('¡Inscripción Exitosa!', {
-        description: 'Ahora puedes empezar a aprender.'
-      });
-    } else {
-      toast.error('Inscripción Fallida', { description: error });
-    }
-    setEnrollingId(null);
-  };
-
-  return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Explorar Cursos</h1>
-        <p className="text-slate-500 mt-2 text-lg">Domina nuevas habilidades con nuestras rutas guiadas por expertos.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm h-96 flex flex-col gap-4">
-              <Skeleton className="h-48 w-full rounded-lg" />
-              <Skeleton className="h-6 w-3/4" />
-              <div className="mt-auto flex justify-between">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            </div>
-          ))
-        ) : (
-          courses.map(course => {
-            const enrollment = enrollments.find(e => e.courseId === course.id) || null;
-            return (
-              <CourseCard
-                key={course.id}
-                course={course}
-                enrollment={enrollment}
-                onClick={onSelectCourse}
-                onEnroll={handleEnroll}
-                isEnrolling={enrollingId === course.id}
-              />
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
-};
-
-// --- View: My Learning ---
-const MyLearningView: React.FC<{ onSelectCourse: (id: string) => void }> = ({ onSelectCourse }) => {
-  const { user } = useAuth();
-  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      const { data: coursesData } = await courseService.getAllCourses();
-      const { data: enrollmentData } = await enrollmentService.getStudentEnrollments(user.id);
-
-      if (coursesData && enrollmentData) {
-        const userCourseIds = enrollmentData.map(e => e.courseId);
-        const filtered = coursesData.filter(c => userCourseIds.includes(c.id));
-        setEnrolledCourses(filtered);
-        setEnrollments(enrollmentData);
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, [user]);
-
-  if (!user) {
-    return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-slate-900">Inicia sesión para ver tu aprendizaje</h2>
-      </div>
+const DocumentHub: React.FC<{ documents: MarkdownDocument[] }> = ({
+    documents,
+}) => {
+    const [selectedName, setSelectedName] = useState(documents[0]?.name || "");
+    const [query, setQuery] = useState("");
+    const [copied, setCopied] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const selectedDocument =
+        documents.find((document) => document.name === selectedName) ||
+        documents[0];
+    const filteredDocuments = documents.filter((document) =>
+        document.name.toLowerCase().includes(query.toLowerCase()),
     );
-  }
 
-  return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Mi Aprendizaje</h1>
-        <p className="text-slate-500 mt-2 text-lg">Continúa donde lo dejaste.</p>
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm h-96 flex flex-col gap-4">
-              <Skeleton className="h-48 w-full rounded-lg" />
-              <Skeleton className="h-6 w-3/4" />
-            </div>
-          ))}
-        </div>
-      ) : enrolledCourses.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
-          <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={32} className="text-slate-400" />
-          </div>
-          <h3 className="text-lg font-medium text-slate-900">No estás inscrito en ningún curso</h3>
-          <p className="text-slate-500 mt-2">Explora el catálogo para empezar a aprender.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {enrolledCourses.map(course => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              enrollment={enrollments.find(e => e.courseId === course.id) || null}
-              onClick={onSelectCourse}
-              onEnroll={() => { }}
-              isEnrolling={false}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- View: Player ---
-const PlayerView: React.FC<{ courseId: string; onBack: () => void }> = ({ courseId, onBack }) => {
-  const { user } = useAuth();
-  const [course, setCourse] = useState<Course | null>(null);
-  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
-  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [markingComplete, setMarkingComplete] = useState(false);
-
-  useEffect(() => {
-    const fetchContext = async () => {
-      setLoading(true);
-      const { data: courseData } = await courseService.getCourseById(courseId);
-
-      if (courseData) {
-        setCourse(courseData);
-        // Default to first lesson
-        if (courseData.lessons.length > 0) {
-          setActiveLesson(courseData.lessons[0]);
-        }
-
-        if (user) {
-          const { data: enrollmentData } = await enrollmentService.getEnrollment(user.id, courseId);
-          setEnrollment(enrollmentData);
-        }
-      }
-      setLoading(false);
+    const copyMarkdown = async () => {
+        if (!selectedDocument) return;
+        await navigator.clipboard.writeText(selectedDocument.content);
+        setCopied(true);
+        toast.success("Markdown copiado al portapapeles");
+        window.setTimeout(() => setCopied(false), 1800);
     };
-    fetchContext();
-  }, [courseId, user]);
 
-  const handleLessonChange = (lesson: Lesson) => {
-    setActiveLesson(lesson);
-  };
+    const selectDocument = (name: string) => {
+        setSelectedName(name);
+        setCopied(false);
+        setSidebarOpen(false);
+    };
 
-  const handleMarkComplete = async () => {
-    if (!user || !course || !activeLesson) return;
-
-    setMarkingComplete(true);
-    const { data } = await enrollmentService.markLessonAsCompleted(user.id, course, activeLesson.id);
-
-    if (data) {
-      setEnrollment(data);
-      toast.success('¡Lección Completada!', {
-        description: `Progreso guardado: ${data.progress}%`
-      });
-    }
-    setMarkingComplete(false);
-  };
-
-  if (loading) {
     return (
-      <div className="animate-pulse space-y-8">
-        <Skeleton className="h-8 w-64 mb-4" />
-        <div className="grid lg:grid-cols-3 gap-8">
-          <Skeleton className="lg:col-span-2 h-[480px] rounded-xl" />
-          <Skeleton className="h-[480px] rounded-xl" />
-        </div>
-      </div>
-    );
-  }
+        <div className="min-h-screen bg-[#f4f6f8] text-slate-900 selection:bg-cyan-200 selection:text-slate-900">
+            <header className="border-b border-slate-800 bg-[#101923] text-white">
+                <div className="mx-auto flex h-[76px] max-w-[1500px] items-center justify-between px-5 lg:px-10">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-400 text-[#101923] shadow-[0_0_22px_rgba(34,211,238,0.25)]">
+                            <FolderOpen size={21} strokeWidth={2.4} />
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
+                                SkillFlow / Workspace
+                            </p>
+                            <h1 className="text-lg font-semibold tracking-tight">
+                                Regulatorios &amp; Contabilidad
+                            </h1>
+                        </div>
+                    </div>
+                    <div className="hidden items-center gap-2 text-xs text-slate-400 sm:flex">
+                        <Command size={14} />
+                        <span>{documents.length} documentos disponibles</span>
+                    </div>
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="rounded-md p-2 text-slate-300 hover:bg-white/10 lg:hidden"
+                        aria-label="Abrir documentos"
+                    >
+                        <Menu size={22} />
+                    </button>
+                </div>
+            </header>
 
-  if (!course || !activeLesson) return <div>Curso no encontrado</div>;
-
-  const isLessonCompleted = enrollment?.completedLessons.includes(activeLesson.id);
-
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-6 text-sm text-slate-500">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1 hover:text-primary-600 transition-colors font-medium"
-        >
-          <ArrowLeft size={16} /> Volver al Catálogo
-        </button>
-        <ChevronRight size={14} className="text-slate-300" />
-        <span className="text-slate-900 truncate">{course.title}</span>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-8 items-start">
-        {/* Main Content: Player */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-slate-900 rounded-2xl p-1 shadow-xl relative">
-            <VideoPlayer videoId={activeLesson.videoId} title={activeLesson.title} />
-          </div>
-
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-slate-900">{activeLesson.title}</h1>
-              <div className="flex items-center gap-4 text-sm text-slate-500">
-                <span className="font-medium text-primary-600">{course.instructor}</span>
-                <span>•</span>
-                <span>Lección {course.lessons.findIndex(l => l.id === activeLesson.id) + 1} de {course.lessons.length}</span>
-              </div>
-            </div>
-
-            {/* Action Area */}
-            {enrollment && (
-              <button
-                onClick={handleMarkComplete}
-                disabled={isLessonCompleted || markingComplete}
-                className={`
-                        flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
-                        ${isLessonCompleted
-                    ? 'bg-green-100 text-green-700 cursor-default'
-                    : 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md'
-                  }
-                    `}
-              >
-                {markingComplete ? (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : isLessonCompleted ? (
-                  <CheckCircle size={18} />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+            <div className="mx-auto flex max-w-[1500px] px-5 lg:px-10">
+                {sidebarOpen && (
+                    <button
+                        className="fixed inset-0 z-30 bg-slate-950/50 lg:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                        aria-label="Cerrar menú"
+                    />
                 )}
-                {isLessonCompleted ? 'Completado' : 'Marcar como Completado'}
-              </button>
-            )}
-          </div>
+                <aside
+                    className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 w-[310px] border-r border-slate-200 bg-white px-5 py-6 shadow-xl transition-transform lg:static lg:z-0 lg:block lg:w-[310px] lg:shrink-0 lg:-translate-x-0 lg:bg-transparent lg:px-0 lg:pr-8 lg:shadow-none`}
+                >
+                    <div className="mb-7 flex items-center justify-between lg:hidden">
+                        <span className="font-semibold">Documentos</span>
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            aria-label="Cerrar documentos"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                    <div className="mb-6 pt-1 lg:pt-9">
+                        <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                            Biblioteca
+                        </p>
+                        <p className="text-sm text-slate-500">
+                            Archivos Markdown de la carpeta fuente
+                        </p>
+                    </div>
+                    <label className="relative mb-5 block">
+                        <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                            value={query}
+                            onChange={(event) => setQuery(event.target.value)}
+                            placeholder="Buscar archivo..."
+                            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
+                        />
+                    </label>
+                    <nav className="space-y-1" aria-label="Archivos Markdown">
+                        {filteredDocuments.map((document) => (
+                            <button
+                                key={document.name}
+                                onClick={() => selectDocument(document.name)}
+                                className={`group flex min-w-0 w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition ${selectedDocument?.name === document.name ? "bg-[#102b3b] text-white shadow-sm" : "text-slate-600 hover:bg-white hover:text-slate-900"}`}
+                            >
+                                <FileText
+                                    size={17}
+                                    className={`mt-0.5 shrink-0 ${selectedDocument?.name === document.name ? "text-cyan-300" : "text-slate-400 group-hover:text-cyan-600"}`}
+                                />
+                                <span className="min-w-0 break-all text-[13px] leading-5">
+                                    {document.name}
+                                </span>
+                            </button>
+                        ))}
+                        {filteredDocuments.length === 0 && (
+                            <p className="px-3 py-4 text-sm text-slate-500">
+                                No se encontraron archivos.
+                            </p>
+                        )}
+                    </nav>
+                </aside>
 
-          <div className="prose prose-slate max-w-none pt-6 border-t border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Sobre esta lección</h3>
-            <p className="text-slate-600">
-              En esta lección, cubriremos los conceptos fundamentales requeridos para avanzar en el currículo de {course.title}.
-            </p>
-          </div>
+                <main className="min-w-0 flex-1 pb-16 lg:pl-10">
+                    {selectedDocument ? (
+                        <>
+                            <div className="flex flex-col gap-5 border-b border-slate-200 py-8 sm:flex-row sm:items-end sm:justify-between lg:pt-12">
+                                <div className="min-w-0">
+                                    <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">
+                                        <FileText size={15} /> Markdown
+                                    </div>
+                                    <h2 className="break-words text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+                                        {selectedDocument.name}
+                                    </h2>
+                                    <p className="mt-2 text-sm text-slate-500">
+                                        Contenido fuente listo para copiar y
+                                        pegar.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={copyMarkdown}
+                                    className={`flex shrink-0 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${copied ? "bg-emerald-600 text-white" : "bg-[#102b3b] text-white hover:bg-cyan-700"}`}
+                                >
+                                    {copied ? (
+                                        <Check size={17} />
+                                    ) : (
+                                        <Copy size={17} />
+                                    )}
+                                    {copied ? "Copiado" : "Copiar Markdown"}
+                                </button>
+                            </div>
+                            <article className="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_8px_35px_rgba(15,23,42,0.05)]">
+                                <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3 text-xs font-medium text-slate-500">
+                                    <span className="h-2 w-2 rounded-full bg-cyan-500" />{" "}
+                                    Vista de contenido original
+                                </div>
+                                <pre className="max-h-[calc(100vh-260px)] overflow-auto whitespace-pre-wrap break-words p-5 font-mono text-[13px] leading-6 text-slate-700 sm:p-8">
+                                    {selectedDocument.content}
+                                </pre>
+                            </article>
+                        </>
+                    ) : (
+                        <div className="py-20 text-center text-slate-500">
+                            No hay documentos Markdown para mostrar.
+                        </div>
+                    )}
+                </main>
+            </div>
+            <Toaster
+                position="top-center"
+                richColors
+                duration={2000}
+                closeButton
+            />
         </div>
-
-        {/* Sidebar: Lesson List */}
-        <div className="lg:col-span-1 lg:sticky lg:top-24 h-[calc(100vh-8rem)]">
-          <LessonList
-            lessons={course.lessons}
-            currentLessonId={activeLesson.id}
-            completedLessonIds={enrollment?.completedLessons || []}
-            onSelectLesson={handleLessonChange}
-            isEnrolled={!!enrollment}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- App Wrapper ---
-const AppContent: React.FC = () => {
-  const [view, setView] = useState<'catalog' | 'player' | 'my-learning'>('catalog');
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-
-  const handleSelectCourse = (id: string) => {
-    setSelectedCourseId(id);
-    setView('player');
-    window.scrollTo(0, 0);
-  };
-
-  const handleBackToCatalog = () => {
-    setView('catalog');
-    setSelectedCourseId(null);
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header onNavigate={setView} onLogin={() => setIsLoginOpen(true)} />
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {view === 'catalog' ? (
-          <CatalogView onSelectCourse={handleSelectCourse} />
-        ) : view === 'my-learning' ? (
-          <MyLearningView onSelectCourse={handleSelectCourse} />
-        ) : selectedCourseId ? (
-          <PlayerView courseId={selectedCourseId} onBack={handleBackToCatalog} />
-        ) : (
-          <CatalogView onSelectCourse={handleSelectCourse} />
-        )}
-      </main>
-    </div>
-  );
+    );
 };
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <Toaster position="top-center" richColors duration={2000} closeButton />
-      <AppContent />
-    </AuthProvider>
-  );
+    const markdownFiles = import.meta.glob<string>(
+        "./sq-regulatorios-contabilidad/*.md",
+        {
+            query: "?raw",
+            import: "default",
+            eager: true,
+        },
+    );
+    const documents = Object.entries(markdownFiles)
+        .map(([path, content]) => ({
+            name: path.split("/").pop() || path,
+            content,
+        }))
+        .sort((first, second) => first.name.localeCompare(second.name));
+
+    return <DocumentHub documents={documents} />;
 }
