@@ -32,9 +32,35 @@ const DocumentHub: React.FC<{ documents: MarkdownDocument[] }> = ({
 
     const copyMarkdown = async () => {
         if (!selectedDocument) return;
-        await navigator.clipboard.writeText(selectedDocument.content);
+
+        try {
+            if (
+                navigator.clipboard?.write &&
+                typeof ClipboardItem !== "undefined"
+            ) {
+                const plainText = new Blob([selectedDocument.content], {
+                    type: "text/plain",
+                });
+                await navigator.clipboard.write([
+                    new ClipboardItem({ "text/plain": plainText }),
+                ]);
+            } else {
+                await navigator.clipboard.writeText(selectedDocument.content);
+            }
+        } catch {
+            const textarea = document.createElement("textarea");
+            textarea.value = selectedDocument.content;
+            textarea.setAttribute("readonly", "true");
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+        }
+
         setCopied(true);
-        toast.success("Markdown copiado al portapapeles");
+        toast.success("Texto original copiado al portapapeles");
         window.setTimeout(() => setCopied(false), 1800);
     };
 
