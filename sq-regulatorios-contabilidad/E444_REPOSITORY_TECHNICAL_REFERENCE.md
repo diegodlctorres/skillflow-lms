@@ -236,7 +236,7 @@ Distribucion de paginas `.aspx` por area:
 ## 16. Deployment e infraestructura visible
 
 | Clasificacion | Hallazgo | Evidencia | Impacto / observacion |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | HECHO VERIFICADO | Proyecto Web depende de `Microsoft.WebApplication.targets` | `E444.WEB.csproj` (Import) | Build requiere toolchain de WebApplication targets (VS/MSBuild clasico). |
 | HECHO VERIFICADO | `UseIISExpress=true` y metadatos de IIS local | `E444.WEB.csproj` | Señal de desarrollo orientado a Visual Studio/IIS Express. |
 | HECHO VERIFICADO | Publish profiles existentes son de tipo FileSystem | `E444.WEB/Properties/PublishProfiles/FolderProfile*.pubxml` | Publicacion local a carpeta (no evidencia de pipeline automatizado). |
@@ -440,14 +440,22 @@ E444
 | |-- Seleccion de aplicacion
 | |-- Portales principales por superficie
 | |-- Autenticacion/autorizacion de sesion
-| `-- Error / No autorizado / Sesion expirada | |-- Encaje Bancario (20) | |-- Inicio Encaje | |-- Configuracion (8) | |-- Procesos (2) | `-- Reportes (9)
+| `-- Error / No autorizado / Sesion expirada
+|
+|-- Encaje Bancario (20)
+| |-- Inicio Encaje
+| |-- Configuracion (8)
+| |-- Procesos (2)
+| `-- Reportes (9)
 |
 |-- Anexo 10 (7)
 | |-- Configuracion de inputs
 | |-- Ajustes
-| `-- Reportes | `-- Balance Sectorial - BSEC (2)
-|-- Procesamiento
-`-- Maestro de clasificacion
+| `-- Reportes
+|
+`-- Balance Sectorial - BSEC (2)
+ |-- Procesamiento
+  `-- Maestro de clasificacion
 ```
 
 Estado estructural de las 35 paginas:
@@ -760,7 +768,7 @@ Caracterizacion ETL (segun alcance):
 
 | ID | Pregunta | Prioridad | Por que importa | Evidencia faltante |
 | --- | --- | --- | --- | --- |
-| Q2A-04 | Cual es el contrato operativo entre `EB_CALCULAR_ENCAJE` y `JOB_E444_SSIS_CalculaEncaje_Monitor` (parametros/datos, estados, errores, polling y criterio de finalizacion)? | ALTA | Define la trazabilidad E2E del procesamiento diferido de calculo de Encaje | Profundizado en PASADA 2B (secciones 44-68). El vinculo explicito con `JOB_E444_SSIS_CalculaEncajeMonitor` sigue `NO DETERMINADO` con evidencia de codigo Web/BL/DA. |
+| Q2A-04 | Cual es el contrato operativo entre `EB_CALCULAR_ENCAJE` y `JOB_E444_SSIS_CalculaEncaje_Monitor` (parametros/datos, estados, errores, polling y criterio de finalizacion)? | ALTA | Define la trazabilidad E2E del procesamiento diferido de calculo de Encaje | Profundizado en PASADA 2B (secciones 44-68). El vinculo explicito con `JOB_E444_SSIS_CalculaEncaje_Monitor` sigue `NO DETERMINADO` con evidencia de codigo Web/BL/DA. |
 | Q2A-06 | Como se calcula el conjunto efectivo de operaciones cuando un usuario pertenece a multiples roles (union, precedencia u otra regla)? | ALTA | Necesario para mapa actor-permiso consistente en escenarios multirol | Regla formal de combinacion de roles/operaciones |
 | Q2A-08 | Cuales son los consumidores tecnicos reales de `DataCollectors` y `ProcesaReportes` (internos/no UI) y su vigencia operativa? | MEDIA | Evita clasificacion incorrecta de componentes tecnicos como residuales o activos de usuario final | Trazabilidad tecnica/operativa adicional fuera del codigo visible |
 | Q2A-09 | Cual es el ownership definitivo de datos por dominio (Encaje/A10/BSEC) sobre la base fisica compartida? | MEDIA | Clave para analisis posterior de boundaries y evolucion | Analisis de BD por dominio en fase posterior |
@@ -770,11 +778,13 @@ Caracterizacion ETL (segun alcance):
 PASADA 2A: COMPLETA.
 
 1. AS-IS VERIFICADO:
-  - Se completo el mapa funcional navegable (entrada -> menu -> pantallas -> acciones) para Encaje, Anexo 10, BSEC y funciones transversales.
-  - Se documento trazabilidad `pantalla -> BL -> DA -> SP/integracion` al nivel de referencia definido para esta pasada.
-  - Se consolidaron flujos de archivos/Excel y procesamiento diferido visible desde codigo.
+
+- Se completo el mapa funcional navegable (entrada -> menu -> pantallas -> acciones) para Encaje, Anexo 10, BSEC y funciones transversales.
+- Se documento trazabilidad `pantalla -> BL -> DA -> SP/integracion` al nivel de referencia definido para esta pasada.
+- Se consolidaron flujos de archivos/Excel y procesamiento diferido visible desde codigo.
 
 2. GAPS / DEUDA CONOCIDOS (NO abiertos como pregunta):
+
   - Selector condicionado por `OP_Anexo10` frente a escenario multi-superficie (gap funcional conocido).
   - Desalineacion de permisos TOSE (`OP_Reporte7/8` vs `OP_Reporte6`) como defecto conocido.
   - Falta de chequeo page-level `OP_BSEC` en paginas BSEC como gap conocido.
@@ -782,6 +792,7 @@ PASADA 2A: COMPLETA.
   - Opcion de `MatrizCuenta` deshabilitada en menu como comportamiento operativo intencional.
 
 3. PREGUNTAS PARA ANALISIS POSTERIOR:
+
   - Contrato E2E entre `EB_CALCULAR_ENCAJE` y `JOB_E444_SSIS_CalculaEncaje_Monitor` (profundizado en PASADA 2B, con frontera `NO DETERMINADO` para la parte SSIS/job monitor)
   - Semantica efectiva de permisos en usuarios multirol.
   - Consumidores tecnicos reales de `DataCollectors` y `ProcesaReportes`.
@@ -819,32 +830,32 @@ Pendientes explicitamente marcados como `NO DETERMINADO` cuando exceden evidenci
 
 Pregunta rectora de esta pasada:
 
-* Como funciona realmente Encaje Bancario de extremo a extremo (runtime), desde que un usuario dispara una accion hasta que el sistema cierra/monitorea procesos y habilita reportes.
+- Como funciona realmente Encaje Bancario de extremo a extremo (runtime), desde que un usuario dispara una accion hasta que el sistema cierra/monitorea procesos y habilita reportes.
 
 Alcance efectivo:
 
-* Se profundizo sobre la superficie Encaje (`Procesar`, `CargaInputs`, `Maestros`, `Reportes`) con trazabilidad `JS -> WebMethod -> BL -> DA -> SP/SQL Agent`.
-* Se documento orquestacion de estados, polling, cierre y detencion.
-* Se mantuvo criterio estricto de evidencia: solo codigo versionado del repositorio.
+- Se profundizo sobre la superficie Encaje (`Procesar`, `CargaInputs`, `Maestros`, `Reportes`) con trazabilidad `JS -> WebMethod -> BL -> DA -> SP/SQL Agent`.
+- Se documento orquestacion de estados, polling, cierre y detencion.
+- Se mantuvo criterio estricto de evidencia: solo codigo versionado del repositorio.
 
 ## 45. Fuentes y limites de evidencia en 2B
 
 Fuentes primarias revisadas:
 
-* `E444.WEB/js/Procesar.js`, `E444.WEB/js/CargaInputs.js`, `E444.WEB/js/Maestros.js`.
-* `E444.WEB/Views/Procesos/Procesar.aspx(.cs)`.
-* `E444.WEB/Views/Configuracion/CargaInputs.aspx(.cs)` y `E444.WEB/Handlers/UpFileHandler.ashx.cs`.
-* `E444.WEB/Views/Configuracion/Maestros.aspx(.cs)`.
-* `E444.BL/LCarga.cs`, `E444.DA/DACarga.cs`, `E444.BL/LInputs.cs`, `E444.DA/DAInputs.cs`.
-* `E444.WEB/Views/Reportes/Reporte1.aspx(.cs)`, `Reporte5.aspx(.cs)`, `EncajeBancario.aspx.cs`, `Reporte2.aspx.cs`, `Reporte3.aspx.cs`, `Reporte4.aspx.cs`.
-* `E444.DA/DAReporte1.cs`, `E444.DA/DAReporte5.cs`, `E444.DA/DAEncaje_Bancario.cs`, `E444.DA/DAReporte_Gerencial.cs`.
-* `E444.WEB/General/Util.cs`, `E444.BL/LogUtilBL.cs`, `E444.DA/LogUtilDA.cs`.
+- `E444.WEB/js/Procesar.js`, `E444.WEB/js/CargaInputs.js`, `E444.WEB/js/Maestros.js`.
+- `E444.WEB/Views/Procesos/Procesar.aspx(.cs)`.
+- `E444.WEB/Views/Configuracion/CargaInputs.aspx(.cs)` y `E444.WEB/Handlers/UpFileHandler.ashx.cs`.
+- `E444.WEB/Views/Configuracion/Maestros.aspx(.cs)`.
+- `E444.BL/LCarga.cs`, `E444.DA/DACarga.cs`, `E444.BL/LInputs.cs`, `E444.DA/DAInputs.cs`.
+- `E444.WEB/Views/Reportes/Reporte1.aspx(.cs)`, `Reporte5.aspx(.cs)`, `EncajeBancario.aspx.cs`, `Reporte2.aspx.cs`, `Reporte3.aspx.cs`, `Reporte4.aspx.cs`.
+- `E444.DA/DAReporte1.cs`, `E444.DA/DAReporte5.cs`, `E444.DA/DAEncaje_Bancario.cs`, `E444.DA/DAReporte_Gerencial.cs`.
+- `E444.WEB/General/Util.cs`, `E444.BL/LogUtilBL.cs`, `E444.DA/LogUtilDA.cs`.
 
 Limites:
 
-* No se ejecuto runtime ni trazas de BD en vivo.
-* No se inspecciono definicion interna de SP ni paquetes SSIS.
-* La semantica exacta de ciertos estados retornados por SP queda clasificada donde corresponde como `NO DETERMINADO`.
+- No se ejecuto runtime ni trazas de BD en vivo.
+- No se inspecciono definicion interna de SP ni paquetes SSIS.
+- La semantica exacta de ciertos estados retornados por SP queda clasificada donde corresponde como `NO DETERMINADO`.
 
 ## 46. Macroflujo E2E Encaje observado
 
@@ -902,35 +913,35 @@ Secuencia observable:
 
 Mecanismo de polling:
 
-* `LoadProgress()` corre cada 10 segundos.
-* Si `Acivar == 1`, consulta `Procesar.aspx/ListaProcesarStatus`.
-* Si `Acivar != 1`, consulta `Procesar.aspx/ConsultarProceso`.
+- `LoadProgress()` corre cada 10 segundos.
+- Si `Acivar == 1`, consulta `Procesar.aspx/ListaProcesarStatus`.
+- Si `Acivar != 1`, consulta `Procesar.aspx/ConsultarProceso`.
 
 Contrato visual en `ListaProcesarStatus`:
 
-* Filas `ID=0/1/2`: pintan los tres medidores (`Input`, `Proceso`, `Reporte`) con imagen `<Valor><Estado>.png`.
-* Filas con `ID != 0,1,2`: se interpretan como evento de fin/error operacional.
+- Filas `ID=0/1/2`: pintan los tres medidores (`Input`, `Proceso`, `Reporte`) con imagen `<Valor><Estado>.png`.
+- Filas con `ID != 0,1,2`: se interpretan como evento de fin/error operacional.
 
 Cierre:
 
-* Cuando llega fin de proceso, JS asigna `idproceso` y llama `Procesar.aspx/CerrarProceso`.
-* `CerrarProceso` usa `EB_SP_CERRARPROCESO` y retorna `bool`.
+- Cuando llega fin de proceso, JS asigna `idproceso` y llama `Procesar.aspx/CerrarProceso`.
+- `CerrarProceso` usa `EB_SP_CERRARPROCESO` y retorna `bool`.
 
 ## 50. Contrato de control de proceso (`Consultar`/`Cerrar`) en Procesar
 
 `ConsultarProceso`:
 
-* WebMethod retorna `false` inmediatamente si `idproceso == "0"`.
-* Si no es 0, delega a `EB_SP_CONSULTARPROCESO` (retorno `RESULTADO == 1` => `true`).
+- WebMethod retorna `false` inmediatamente si `idproceso == "0"`.
+- Si no es 0, delega a `EB_SP_CONSULTARPROCESO` (retorno `RESULTADO == 1` => `true`).
 
 `CerrarProceso`:
 
-* Llama `EB_SP_CERRARPROCESO` con `@ID`.
-* Se usa como paso explicito de liberacion/cierre desde JS luego de detectar fin.
+- Llama `EB_SP_CERRARPROCESO` con `@ID`.
+- Se usa como paso explicito de liberacion/cierre desde JS luego de detectar fin.
 
 Implicancia runtime:
 
-* El ciclo de polling depende de un `idproceso` no nulo para consultar estado global real de un proceso ya existente.
+- El ciclo de polling depende de un `idproceso` no nulo para consultar estado global real de un proceso ya existente.
 
 ## 51. Flujo detallado: CargaInputs (subida y registro de input)
 
@@ -939,7 +950,7 @@ Subflujo UI:
 1. `Listar` carga grilla de inputs por reporte/tipo/periodo.
 2. Click en icono `Cargar` abre modal y selecciona `_FilaSeleccion`.
 3. `AjaxUpload` envia archivo a `UpFileHandler.ashx` con `CodInput`, `Hojas`, `NomArchivo`, `FlagDia`.
-4. Respuesta esperada: `S|N=mensaje=extension=rutaOriginal=rutaRelativa=nombre`.
+4. Respuesta esperada: `S|N~mensaje~extension~rutaOriginal~rutaRelativa~nombre`.
 5. Si respuesta es `S`, habilita boton `Cargar` del modal y setea `NOMARCHIVOCARGADO`.
 6. Al confirmar, llama `CargaInputs.aspx/ProcesarCarga` (retorna `EResultadoProcesarCargaInput`).
 
@@ -947,49 +958,49 @@ Subflujo UI:
 
 Reglas observables:
 
-* Nomenclatura exacta (`httpFile.FileName == NomArchivo`).
-* Para `.xls`: valida hojas con NPOI.
-* Para `.xlsx`: valida presencia de hoja con EPPlus.
-* Excepcion codificada: para `A3PEN` y `A3USD` se marca `S` aun si no se encuentra la hoja exacta en esa verificacion inicial.
-* Si resultado final es `N`, elimina temporal cargado.
+- Nomenclatura exacta (`httpFile.FileName == NomArchivo`).
+- Para `.xls`: valida hojas con NPOI.
+- Para `.xlsx`: valida presencia de hoja con EPPlus.
+- Excepcion codificada: para `A3PEN` y `A3USD` se marca `S` aun si no se encuentra la hoja exacta en esa verificacion inicial.
+- Si resultado final es `N`, elimina temporal cargado.
 
 Salida del handler:
 
-* Se serializa por `=` y la UI depende de esa posicion de campos para continuar.
+- Se serializa por `~` y la UI depende de esa posicion de campos para continuar.
 
 ## 53. Validaciones de negocio en `ProcesarCarga` (legacy + nuevos casos)
 
-* `CargaInputs.aspx.cs/ProcesarCarga` centraliza validaciones por `NOMARCHIVO`:
-* Casos legacy (`TCC`, `SIGA`, `SCE`, `GI03089SC`, `GI03585R`) retornan codigos historicos (2..9,100) por desalineaciones de fecha/estructura.
-* `CREDITO_REACTIVA` y `CREDITOS_ME/MN` leen XLSX, validan periodo y luego persisten en tabla objetivo.
-* Si `valreturn != 1`, corta flujo y retorna ese codigo.
+- `CargaInputs.aspx.cs/ProcesarCarga` centraliza validaciones por `NOMARCHIVO`:
+- Casos legacy (`TCC`, `SIGA`, `SCE`, `GI03089SC`, `GI03585R`) retornan codigos historicos (2..9,100) por desalineaciones de fecha/estructura.
+- `CREDITO_REACTIVA` y `CREDITOS_ME/MN` leen XLSX, validan periodo y luego persisten en tabla objetivo.
+- Si `valreturn != 1`, corta flujo y retorna ese codigo.
 
 Persistencia nominal cuando valida:
 
-* Si no es cobertura, invoca `LInputs.ProcesarCarga` (registro de input).
-* Si es cobertura, usa flujo especializado con TVP (seccion 54).
+- Si no es cobertura, invoca `LInputs.ProcesarCarga` (registro de input).
+- Si es cobertura, usa flujo especializado con TVP (seccion 54).
 
 ## 54. Subflujo COBERTURA (`A3USD`, `DETALLEBONOS`)
 
 `CoberturaInputExcelReader` agrega reglas fuertes:
 
-* Cabeceras obligatorias por tipo de archivo.
-* Columna obligatoria `COBERTURA`.
-* `PERIODO` de fila debe coincidir con periodo seleccionado.
-* `COBERTURA` solo admite `SI`/`NO`.
-* Deteccion de duplicados por llave funcional:
-* `A3USD`: `OPERACIONORIGEN + ENTIDADES`.
-* `DETALLEBONOS`: `NEMONICO + TIPO + TOTAL + MONEDA`.
+- Cabeceras obligatorias por tipo de archivo.
+- Columna obligatoria `COBERTURA`.
+- `PERIODO` de fila debe coincidir con periodo seleccionado.
+- `COBERTURA` solo admite `SI`/`NO`.
+- Deteccion de duplicados por llave funcional:
+- `A3USD`: `OPERACIONORIGEN + ENTIDADES`.
+- `DETALLEBONOS`: `NEMONICO + TIPO + TOTAL + MONEDA`.
 
 Codigos de error de cobertura observados:
 
-* `10`: valor de cobertura invalido.
-* `11`: periodo de fila invalido/no coincide.
-* `12`: campos identificadores incompletos.
-* `13`: duplicado funcional.
-* `15`: estructura/cabeceras invalidas.
-* `16`: columna `COBERTURA` faltante.
-* `17`: `COBERTURA` vacia.
+- `10`: valor de cobertura invalido.
+- `11`: periodo de fila invalido/no coincide.
+- `12`: campos identificadores incompletos.
+- `13`: duplicado funcional.
+- `15`: estructura/cabeceras invalidas.
+- `16`: columna `COBERTURA` faltante.
+- `17`: `COBERTURA` vacia.
 
 ## 55. Persistencia cobertura, copias y rollback
 
@@ -997,58 +1008,60 @@ Cuando la validacion llega a estado exitoso (`valreturn == 1`):
 
 1. Se ejecuta `CopiarConRespaldo(origen, rutas, nombreArchivo)`.
 2. Se intenta registrar en BD:
-* `A3USD`: `LInputs.ProcesarCargaA3USD` -> `DAInputs.ProcesarCargaA3USD`.
-* `DETALLEBONOS`: `LInputs.ProcesarCargaDetalleBonos` -> `DAInputs.ProcesarCargaDetalleBonos`.
+
+- `A3USD`: `LInputs.ProcesarCargaA3USD` -> `DAInputs.ProcesarCargaA3USD`.
+- `DETALLEBONOS`: `LInputs.ProcesarCargaDetalleBonos` -> `DAInputs.ProcesarCargaDetalleBonos`.
 
 3. En DA se ejecuta transaccion SQL que incluye:
-* `EB_CARGA_INPUT_INSERTAR`.
-* SP de cobertura (`EB_SP_COBERTURA_A3USD_REGISTRAR` o `EB_SP_COBERTURA_BONO_REGISTRAR`) con TVP.
+
+- `EB_CARGA_INPUT_Insertar`.
+- SP de cobertura (`EB_SP_COBERTURA_A3USD_REGISTRAR` o `EB_SP_COBERTURA_BONO_REGISTRAR`) con TVP.
 
 4. Si todo sale bien: `ConfirmarCopias` elimina respaldos `.bak_cobertura_*`.
 5. Si falla: `RevertirCopias` restaura destinos previos y elimina copias nuevas.
 
 Observacion:
 
-* La UI contempla mensaje para codigo `14`, pero en el flujo actual ese codigo no se emite explicitamente desde backend; fallas de persistencia generalizan en `100` por catch superior.
+- La UI contempla mensaje para codigo `14`, pero en el flujo actual ese codigo no se emite explicitamente desde backend; fallas de persistencia generalizan en `100` por catch superior.
 
 ## 56. Flujo `ProcesarCargaInput` (batch) y estado de carga
 
 Separado del alta de un archivo individual:
 
-* `CargaInputs.aspx/ProcesarCargaInput` invoca `LCarga.ProcesarInput`.
-* `DACarga.ProcesarInput` ejecuta `EB_PROCESAR_INPUT` (timeout 360 seg).
+- `CargaInputs.aspx/ProcesarCargaInput` invoca `LCarga.ProcesarInput`.
+- `DACarga.ProcesarInput` ejecuta `EB_PROCESAR_INPUT` (timeout 360 seg).
 
 Monitoreo batch de input:
 
-* JS (`LoadProgress`) llama `CargaInputs.aspx/ValidarEstado` cada 10s cuando `Activar=1`.
-* `ValidarEstado` usa `EB_VALIDAR_ESTADO_INPUT`.
-* Convencion observable en UI:
-* `ID == 1`: proceso concluido, limpia flag y llama cierre.
-* `ID == 2`: timeout/error de espera, muestra alerta y llama cierre.
+- JS (`LoadProgress`) llama `CargaInputs.aspx/ValidarEstado` cada 10s cuando `Activar=1`.
+- `ValidarEstado` usa `EB_VALIDAR_ESTADO_INPUT`.
+- Convencion observable en UI:
+- `ID == 1`: proceso concluido, limpia flag y llama cierre.
+- `ID == 2`: timeout/error de espera, muestra alerta y llama cierre.
 
 ## 57. Flujo Maestros: carga, proceso y detencion
 
 Subflujo de carga de archivo maestro:
 
-* `Maestros.aspx/ProcesarCarga` lee Excel segun tipo, registra cabecera de carga y persiste en tablas maestras.
-* Operaciones por tabla:
-* `EB_M_BANCO` y `EB_M_MONEDA` por `cnn_Encaje`.
-* `EB_M_GRANDESACREEDEDORES` y `EB_M_RESIDENTESYNORES` por `cnn_EncajeAE`.
+- `Maestros.aspx/ProcesarCarga` lee Excel segun tipo, registra cabecera de carga y persiste en tablas maestras.
+- Operaciones por tabla:
+- `EB_M_BANCO` y `EB_M_MONEDA` por `cnn_Encaje`.
+- `EB_M_GRANDESACREEDEDORES` y `EB_M_RESIDENTESYNORES` por `cnn_EncajeAE`.
 
-* Se aplica patron delete por periodo + `SqlBulkCopy` dentro de transaccion.
+- Se aplica patron delete por periodo + `SqlBulkCopy` dentro de transaccion.
 
 Subflujo de proceso maestro:
 
-* Boton `Procesar` (UI) llama `Maestros.aspx/ProcesarMaestro`.
-* Backend deriva a `EB_SP_PROCESA_MAESTRO`.
+- Boton `Procesar` (UI) llama `Maestros.aspx/ProcesarMaestro`.
+- Backend deriva a `EB_SP_PROCESA_MAESTRO`.
 
 Detencion:
 
-* Boton `Detener` llama `Maestros.aspx/Detener` -> `EB_SP_DETENERPROCESO`.
+- Boton `Detener` llama `Maestros.aspx/Detener` -> `EB_SP_DETENERPROCESO`.
 
 Estado/polling:
 
-* Existe `ValidarEstado` (`EB_VALIDAR_ESTADO`), pero en JS `LoadProgress()` esta comentado; por defecto no se activa ciclo automatico de polling en esta pantalla.
+- Existe `ValidarEstado` (`EB_VALIDAR_ESTADO`), pero en JS `LoadProgress()` esta comentado; por defecto no se activa ciclo automatico de polling en esta pantalla.
 
 ## 58. Diferencias de orquestacion entre `Procesar`, `CargaInputs` y `Maestros`
 
@@ -1064,10 +1077,10 @@ Estado/polling:
 
 Aunque hay multiples pantallas, la gobernanza de cierre/consulta converge en endpoints de `Procesar.aspx`:
 
-* `ConsultarProceso`.
-* `CerrarProceso`.
+- `ConsultarProceso`.
+- `CerrarProceso`.
 
-Esto convierte a `Procesar.aspx` en hub de control de ciclo de vida del proceso para modulos que no son estrictamente "Procesar" (por ejemplo `CargaInputs` y `Maestros`).
+Esto convierte a `Procesar.aspx` en hub de control de ciclo de vida del proceso para modulos que no son estrictamente `Procesar` (por ejemplo `CargaInputs` y `Maestros`).
 
 ## 60. Reportes 1 y 5: disparo de broad y SQL Agent
 
@@ -1076,60 +1089,61 @@ Flujo observable:
 1. Usuario genera TXT MN/ME.
 2. Si checkbox `Generar Broad` esta activo, se llama `generabroad(...)`.
 3. DA ejecuta:
-* `E444_ACTUALIZA_PARAMETRO_FECHA`.
-* `USE msdb; EXEC sp_start_job ...`.
+
+- `E444_ACTUALIZA_PARAMETRO_FECHA`.
+- `USE msdb; EXEC sp_start_job ...`.
 
 Jobs disparados:
 
-* Reporte 1: `E444_BROAD_RPT1_MN`, `E444_BROAD_RPT1_ME`.
-* Reporte 5: `E444_BROAD_RPT5_MN`, `E444_BROAD_RPT5_ME`.
+- Reporte 1: `E444_BROAD_RPT1_MN`, `E444_BROAD_RPT1_ME`.
+- Reporte 5: `E444_BROAD_RPT5_MN`, `E444_BROAD_RPT5_ME`.
 
 Observacion:
 
-* El flujo web solo dispara job; no implementa polling de exito/fallo del SQL Agent en la misma pantalla.
+- El flujo web solo dispara job; no implementa polling de exito/fallo del SQL Agent en la misma pantalla.
 
 ## 61. Reportes 2, 3 y 4: acoplamientos relevantes
 
 Hallazgos runtime:
 
-* `Reporte2.aspx.cs` depende de `Session["dtCabecera_*"]`, `Session["dtSwitfOpe_*"]`, `Session["dtReporteInf_*"]` para construir salida Excel.
-* `Reporte3.js` y `Reporte4.js` consumen endpoints de `Reporte1.aspx` (`ValidarPeriodo`, `ListarMN`, `ListarME`) para poblar grillas de UI.
-* La generacion oficial de archivos de R3/R4 se hace en sus propios code-behind (`Reporte3.aspx.cs`, `Reporte4.aspx.cs`).
+- `Reporte2.aspx.cs` depende de `Session["dtCabecera_*"]`, `Session["dtSwitfOpe_*"]`, `Session["dtReporteInf_*"]` para construir salida Excel.
+- `Reporte3.js` y `Reporte4.js` consumen endpoints de `Reporte1.aspx` (`ValidarPeriodo`, `ListarMN`, `ListarME`) para poblar grillas de UI.
+- La generacion oficial de archivos de R3/R4 se hace en sus propios code-behind (`Reporte3.aspx.cs`, `Reporte4.aspx.cs`).
 
 Implicancia:
 
-* Existe acoplamiento funcional entre pantallas de reportes, especialmente a nivel de consumo AJAX de datos de R1 para UI en R3/R4.
+- Existe acoplamiento funcional entre pantallas de reportes, especialmente a nivel de consumo AJAX de datos de R1 para UI en R3/R4.
 
 ## 62. EncajeBancario: consulta, recalculo y versionado
 
 `EncajeBancario.aspx.cs` expone WebMethods para:
 
-* Recalculo diario MN: `CalcularDiarioMN` -> `EB_SP_RECALCULARDIARIO`.
-* Recalculo EA/ME: `CalcularEA` -> `EB_SP_RECALCULARDIARIO_ME`.
-* Consulta de cabeceras/superior/inferior MN/ME por fecha.
+- Recalculo diario MN: `CalcularDiarioMN` -> `EB_SP_RECALCULARDIARIO`.
+- Recalculo EA/ME: `CalcularEA` -> `EB_SP_RECALCULARDIARIO_ME`.
+- Consulta de cabeceras/superior/inferior MN/ME por fecha.
 
 Generacion de archivo:
 
-* Versionado por `Count_Reporte_Version` / `Insertar_Reporte_Version` (reporte codigo 1).
-* Plantilla `Encaje.xlsx` con dos hojas (MN/ME) y carga de data por SP de cabecera/superior/inferior.
+- Versionado por `Count_Reporte_Version` / `Insertar_Reporte_Version` (reporte codigo 1).
+- Plantilla `Encaje.xlsx` con dos hojas (MN/ME) y carga de data por SP de cabecera/superior/inferior.
 
 ## 63. Controles transversales de datos procesados
 
 Validacion previa de reportes:
 
-* `Util.Validar_Reportes(codmes, reporte)` -> `LogUtilBL` -> `LogUtilDA` -> `EB_VALIDA_REPORTE`.
-* Se usa para impedir generacion cuando no hay datos procesados del periodo.
+- `Util.Validar_Reportes(codmes, reporte)` -> `LogUtilBL` -> `LogUtilDA` -> `EB_VALIDA_REPORTE`.
+- Se usa para impedir generacion cuando no hay datos procesados del periodo.
 
 Detalle de Pasivos Totales ME:
 
-* `LPasivosTotales` consume `DAPasivosTotales.ConsultarDetallePasivosTotalesME`.
-* SP: `EB_SP_EXPORTAR_DETALLE_PASIVOS_TOTALES_ME` con 3 result sets:
+- `LPasivosTotales` consume `DAPasivosTotales.ConsultarDetallePasivosTotalesME`.
+- SP: `EB_SP_EXPORTAR_DETALLE_PASIVOS_TOTALES_ME` con 3 result sets:
+
 1. Estado de calculo/exportabilidad.
 2. Detalle diario.
 3. Detalle de coberturas.
 
-
-* BL valida consistencia (dias esperados, duplicados, subtotales) antes de exportar.
+- BL valida consistencia (dias esperados, duplicados, subtotales) antes de exportar.
 
 ## 64. Matriz endpoint -> BL -> DA -> SP/SQL
 
@@ -1141,8 +1155,8 @@ Detalle de Pasivos Totales ME:
 | `Procesar.aspx/CerrarProceso` | `LCarga.CerrarProceso` | `DACarga.CerrarProceso` | `EB_SP_CERRARPROCESO` |
 | `CargaInputs.aspx/ProcesarCargaInput` | `LCarga.ProcesarInput` | `DACarga.ProcesarInput` | `EB_PROCESAR_INPUT` |
 | `CargaInputs.aspx/ValidarEstado` | `LCarga.ValidarEstadoInput` | `DACarga.ValidarEstadoInput` | `EB_VALIDAR_ESTADO_INPUT` |
-| `CargaInputs.aspx/ProcesarCarga` (cobertura A3USD) | `LInputs.ProcesarCargaA3USD` | `DAInputs.ProcesarCargaA3USD` | `EB_CARGA_INPUT_INSERTAR` + `EB_SP_COBERTURA_A3USD_REGISTRAR` |
-| `CargaInputs.aspx/ProcesarCarga` (cobertura bonos) | `LInputs.ProcesarCargaDetalleBonos` | `DAInputs.ProcesarCargaDetalleBonos` | `EB_CARGA_INPUT_INSERTAR` + `EB_SP_COBERTURA_BONO_REGISTRAR` |
+| `CargaInputs.aspx/ProcesarCarga` (cobertura A3USD) | `LInputs.ProcesarCargaA3USD` | `DAInputs.ProcesarCargaA3USD` | `EB_CARGA_INPUT_Insertar` + `EB_SP_COBERTURA_A3USD_REGISTRAR` |
+| `CargaInputs.aspx/ProcesarCarga` (cobertura bonos) | `LInputs.ProcesarCargaDetalleBonos` | `DAInputs.ProcesarCargaDetalleBonos` | `EB_CARGA_INPUT_Insertar` + `EB_SP_COBERTURA_BONO_REGISTRAR` |
 | `Maestros.aspx/ProcesarMaestro` | `LCarga.ProcesarMaestro` | `DACarga.ProcesarMaestro` | `EB_SP_PROCESA_MAESTRO` |
 | `Maestros.aspx/Detener` | `LCarga.ProcesarDetener` | `DACarga.ProcesarDetener` | `EB_SP_DETENERPROCESO` |
 | `Maestros.aspx/ValidarEstado` | `LCarga.ValidarEstado` | `DACarga.ValidarEstado` | `EB_VALIDAR_ESTADO` |
@@ -1162,41 +1176,55 @@ Detalle de Pasivos Totales ME:
 | Proceso global activo | `true/false` en consulta | `EB_SP_CONSULTARPROCESO` | Mensaje de proceso en ejecucion o concluido |
 
 Nota:
-* La semantica interna completa de cada codigo/estado en SP no esta en C#; la UI solo interpreta subconjuntos fijos.
+
+- La semantica interna completa de cada codigo/estado en SP no esta en C#; la UI solo interpreta subconjuntos fijos.
 
 ## 66. Riesgos y anomalias confirmadas en 2B
 
 1. Control inicial de concurrencia debilitado por `idproceso=0`:
-* `ConsultarProceso` retorna `false` inmediato si `idproceso == "0"`; en carga inicial de pagina ese es el valor por defecto.
-* Impacto: el chequeo preventivo de proceso activo puede no reflejar ejecuciones existentes hasta tener un id valido.
+
+- `ConsultarProceso` retorna `false` inmediato si `idproceso == "0"`; en carga inicial de pagina ese es el valor por defecto.
+- Impacto: el chequeo preventivo de proceso activo puede no reflejar ejecuciones existentes hasta tener un id valido.
+
 2. Polling de Maestros deshabilitado por defecto:
-* `LoadProgress()` esta comentado en `Maestros.js`.
-* Impacto: dependencia de refresco/manualidad para visibilidad de avance.
+
+- `LoadProgress()` esta comentado en `Maestros.js`.
+- Impacto: dependencia de refresco/manualidad para visibilidad de avance.
+
 3. Inconsistencia de clave de sesion (`Usuario` vs `usuario`):
-* Conviven ambos accesos en Web.
-* Impacto: riesgo de `null` y comportamientos no deterministas en algunos flujos.
+
+- Conviven ambos accesos en Web.
+- Impacto: riesgo de `null` y comportamientos no deterministas en algunos flujos.
+
 4. Transacciones locales en BL no abarcan realmente operaciones DA en algunos caminos:
-* `LInputs.ProcesarCargaInput(BE, dt, strConn)` y `LInputs.ProcesarCargaCreditos(...)` crean `SqlTransaction`, pero los metodos DA invocados abren conexiones propias.
-* Impacto: falsa sensacion de atomicidad cross-operacion en esos flujos.
+
+- `LInputs.ProcesarCargaInput(BE, dt, strConn)` y `LInputs.ProcesarCargaCreditos(...)` crean `SqlTransaction`, pero los metodos DA invocados abren conexiones propias.
+- Impacto: falsa sensacion de atomicidad cross-operacion en esos flujos.
+
 5. Desalineacion contrato UI-backend para codigo `14` en CargaInputs:
-* UI tiene mensaje dedicado a `14`, backend actual no lo retorna explicitamente.
-* Impacto: ruido operativo al diagnosticar fallas de registro.
+
+- UI tiene mensaje dedicado a `14`, backend actual no lo retorna explicitamente.
+- Impacto: ruido operativo al diagnosticar fallas de registro.
+
 6. Validacion inicial flexible para `A3PEN`/`A3USD` en handler de upload:
-* Se acepta `S` sin comprobacion estricta de hoja en esa etapa inicial.
-* Impacto: errores se desplazan a validaciones posteriores de negocio.
+
+- Se acepta `S` sin comprobacion estricta de hoja en esa etapa inicial.
+- Impacto: errores se desplazan a validaciones posteriores de negocio.
+
 7. Acoplamiento cruzado de UI en reportes:
-* `Reporte3.js` y `Reporte4.js` consumen endpoints de `Reporte1.aspx` para listar datos.
-* Impacto: cambio en contrato de R1 afecta pantallas R3/R4.
+
+- `Reporte3.js` y `Reporte4.js` consumen endpoints de `Reporte1.aspx` para listar datos.
+- Impacto: cambio en contrato de R1 afecta pantallas R3/R4.
 
 ## 67. Fronteras de incertidumbre (`NO DETERMINADO`)
 
 Permanece `NO DETERMINADO` con evidencia disponible:
 
-* Contrato interno exacto de `EB_CALCULAR_ENCAJE` (reglas de negocio internas, estados completos, errores exhaustivos).
-* Relacion operacional exacta entre `EB_CALCULAR_ENCAJE` y `JOB_E444_SSIS_CalculaEncaje_Monitor` (nombre de job, handshake, criterios de finalizacion).
-* Semantica completa de codigos retornados por `EB_VALIDAR_ESTADO`, `EB_VALIDAR_ESTADO_INPUT`, `EB_PROCESAR_STATUS`, `EB_SP_CONSULTARPROCESO` y `EB_SP_CERRARPROCESO` mas alla de lo que UI interpreta.
-* Estado real de ejecucion de jobs SQL Agent de broad posterior a `sp_start_job` (la app no monitorea finalizacion en estas pantallas).
-* Consumidores tecnicos en produccion de `DataCollectors` y `ProcesaReportes` fuera de navegacion UI.
+- Contrato interno exacto de `EB_CALCULAR_ENCAJE` (reglas de negocio internas, estados completos, errores exhaustivos).
+- Relacion operacional exacta entre `EB_CALCULAR_ENCAJE` y `JOB_E444_SSIS_CalculaEncaje_Monitor` (nombre de job, handshake, criterios de finalizacion).
+- Semantica completa de codigos retornados por `EB_VALIDAR_ESTADO`, `EB_VALIDAR_ESTADO_INPUT`, `EB_PROCESAR_STATUS`, `EB_SP_CONSULTARPROCESO` y `EB_SP_CERRARPROCESO` mas alla de lo que UI interpreta.
+- Estado real de ejecucion de jobs SQL Agent de broad posterior a `sp_start_job` (la app no monitorea finalizacion en estas pantallas).
+- Consumidores tecnicos en produccion de `DataCollectors` y `ProcesaReportes` fuera de navegacion UI.
 
 ## 68. Conclusiones parciales de Pasada 2B (nucleo E2E)
 
@@ -1211,19 +1239,24 @@ Respuesta sintetica a la pregunta "como funciona realmente Encaje E2E":
 7. El punto que sigue abierto por limite de evidencia C# es la parte SSIS/job monitor posterior a SP: clasificado como `NO DETERMINADO`.
 
 Nota de estado:
+
 - Este bloque no cierra la PASADA 2B completa; constituye la base E2E previa al slice de configuracion/mantenimientos.
 
 ## 69. Objetivo operativo de Pasada 2B.1 (Configuracion y Mantenimientos)
+
 Objetivo de este slice:
+
 - Reconstruir, en modo AS-IS, los casos de uso de mantenimiento para `ParametrosFijos`, `ParametrosVariables`, `Ajustes`, `MatrizCuenta` y `Rubros`.
 - Documentar contratos visibles endpoint -> BL -> DA -> SP/SQL, incluyendo operaciones de lectura, escritura, importacion, exportacion, proceso y disparo externo.
 - Registrar precondiciones operativas, estado web/sesion, atomicidad/transacciones y reglas funcionales visibles en UI y C#.
 
 Fuera de alcance explicito en 2B.1:
+
 - Re-analisis profundo de `Procesar`, `CargaInputs` y `Maestros` (ya cubiertos en secciones 44-68).
 - Inferencia interna de logica SQL dentro de SP (se preserva frontera `NO DETERMINADO`).
 
 ## 70. Casos de uso funcionales por area
+
 | Area | Casos de uso funcionales observados |
 | --- | --- |
 | Parametros Fijos | Consultar catalogo por nombre, editar valor/descripcion/fecha de vigencia, exportar listado a Excel |
@@ -1233,11 +1266,12 @@ Fuera de alcance explicito en 2B.1:
 | Rubros | Consultar por filtro/input, alta/edicion (mismo backend), activacion/desactivacion, carga de combo de inputs |
 
 ## 71. Matriz endpoint -> BL -> DA -> SP/SQL (slice 2B.1)
+
 | Endpoint / evento WEB | BL | DA | SP / SQL visible |
 | --- | --- | --- | --- |
 | `ParametrosFijos.aspx/ListaParametros` | `LParametro.ListaParametros` | `DAParametro.ListaParametros` | `EB_OBTIENEPARAMETROS` |
 | `ParametrosFijos.aspx/ActualizaParametro` | `LParametro.ActualizaParametro` | `DAParametro.ActualizaParametro` | `EB_ACTUALIZAPARFIJO` |
-| `ParametrosFijos.btnGenerar_Click` | `LParametro.Parametro_Fijo_Lista` | `DAParametro.Parametro_Fijo_Lista` (helper) | `EB_OBTIENEPARAMETROS` |
+| `ParametrosFijos.btnGenerar_Click` | `LParametro.Parametro_Fijo_Lista` | `DAParametro.Parametro_Fijo_Lista` (`helper`) | `EB_OBTIENEPARAMETROS` |
 | `ParametrosVariables.aspx/ListaParmVarPeriodo` | `LParametro.ListaParmVarPeriodo` | `DAParametro.ListaParmVarPeriodo` | `EB_LISTAPARAMETROXDIA` |
 | `ParametrosVariables.aspx/ActualizaHistParVar` | `LParametro.ActualizaHistParVar` | `DAParametro.ActualizaHistParVar` | `EB_ACTUALIZAHISPARVARIABLE` |
 | `ParametrosVariables.aspx/ActualizaHistParVar108` | `LParametro.ActualizaHistParVar108` | `DAParametro.ActualizaHistParVar108` | `EB_ACTUALIZAHISPARVARIABLE108` |
@@ -1273,6 +1307,7 @@ Fuera de alcance explicito en 2B.1:
 | `Rubros.aspx/CambiarEstadoRubro` | `LRubro.Activar` | `DARubro.ActivarRubro` | `EB_SP_RUBRO_ACTIVAR` |
 
 ## 72. Clasificacion operativa (READ/WRITE/IMPORT/EXPORT/PROCESS/EXTERNAL TRIGGER)
+
 | Caso de uso | Clasificacion |
 | --- | --- |
 | Listados de parametros, ajustes, matriz, rubros, combos de apoyo | `READ` |
@@ -1283,6 +1318,7 @@ Fuera de alcance explicito en 2B.1:
 | `EjecutarKillJob` en MatrizCuenta | `EXTERNAL TRIGGER` + `PROCESS` |
 
 ## 73. Sincronia de ejecucion (request/response)
+
 | Flujo | Modo observable |
 | --- | --- |
 | WebMethods AJAX de mantenimiento (listar/editar/eliminar/insertar) | Sincrono HTTP (respuesta inmediata por request) |
@@ -1292,13 +1328,15 @@ Fuera de alcance explicito en 2B.1:
 | Kill job (`EjecutarKillJob`) | Sincrono HTTP que dispara accion en SQL Server |
 
 Observacion:
+
 - En este slice no se evidencia cola asincrona/polling propio de configuracion; cualquier asincronia interna queda encapsulada dentro de SP (`NO DETERMINADO`).
 
 ## 74. Precondiciones funcionales y de calculo
+
 | Caso | Precondiciones visibles |
 | --- | --- |
 | Parametro fijo - editar | Valor, descripcion y fecha obligatorios en modal |
-| Parametro variable - editor historico | Periodo `yyyy-mm` obligatorio, al menos un dia con valor para confirmar guardado |
+| Parametro variable - editar historico | Periodo `yyyy-mm` obligatorio, al menos un dia con valor para confirmar guardado |
 | Parametro variable - replicar | Periodo valido en `hiddenTxtMes` + permiso `OP_ParametrosVariablesReplicar` |
 | Parametro variable - carga masiva | Archivo `.xls/.xlsx`, estructura esperada (hoja/columnas), periodo parseable desde columna `PERIODO` |
 | Ajuste - alta individual | Input, tipo ajuste, moneda, operacion, monto, fecha inicio/fin validas, observacion |
@@ -1308,9 +1346,11 @@ Observacion:
 | Rubro - alta/edicion | Descripcion obligatoria; codificacion de rubro controlada por formulario |
 
 Precondicion de efecto en calculo de Encaje:
+
 - Los mantenimientos de este slice no recalculan Encaje por si mismos; su efecto material sobre resultados se observa cuando se ejecutan procesos de calculo/reporteria en flujos ya documentados en secciones 44-68.
 
 ## 75. Estado web y sesion involucrados
+
 | Artefacto de estado | Uso observable |
 | --- | --- |
 | `Session["Permisos"]` | Gate de acceso por pagina (`OP_ParametrosFijos`, `OP_ParametrosVariables`, `OP_Ajustes`, `OP_Mantenedor_Cuentas`, `OP_Mantenedor_Rubros`) |
@@ -1321,34 +1361,41 @@ Precondicion de efecto en calculo de Encaje:
 | `paramFec` (hidden) | Periodo para descarga de plantilla en parametros variables |
 
 Nota:
+
 - Se mantiene inconsistencia de clave de sesion (`Usuario` vs `usuario`) dentro del mismo slice.
 
 ## 76. Atomicidad y transacciones observables
+
 | Flujo | Cobertura transaccional visible |
 | --- | --- |
 | Ediciones individuales (parametros, ajustes, matriz, rubros) | Un solo SP por request; sin transaccion explicita en C# |
 | Parametros Variables - carga masiva (`Insertar_Carga_Masiva_Nueva`) | `SqlTransaction` explicita en C#: `DELETE` por anio/mes + `SqlBulkCopy`; `Commit/Rollback` |
-| Parametros Variables - carga masiva legacy (`Insertar Carga Masiva`) | `SqlTransaction` explicita en C# (ruta BL disponible, no usada en `btnCargar_Click` actual) |
+| Parametros Variables - carga masiva legacy (`Insertar_Carga_Masiva`) | `SqlTransaction` explicita en C# (ruta BL disponible, no usada en `btnCargar_Click` actual) |
 | Ajustes - carga masiva (`EB_AJUSTE_MASIVO_INSERT`) | Sin transaccion explicita en C#; atomicidad delegada al SP |
 | Eliminacion masiva de ajustes | Un solo SP con TVP `dbo.IdList`; atomicidad delegada al SP |
 
 ## 77. Catalogo de reglas y validaciones visibles
+
 Reglas de UI/cliente:
+
 - Parametros fijos/variables restringen entrada numerica con validacion de decimales y caracteres.
 - Ajustes valida fechas en formato `dd/MM/yyyy`, obligatorios funcionales y seleccion de combos.
 - Matriz cuenta valida obligatoriedad de campos clave y orden cronologico de meses.
 - Rubros valida descripcion no vacia.
 
 Reglas de backend inmediato:
+
 - Autorizacion por permiso `OP_*` en `Page_Load` con redireccion a `NoAutorizado.aspx`.
 - Cargas masivas validan extension de archivo antes de procesar (`.xls/.xlsx`).
 - Replica de parametros variables retorna codigos de control (`-2,-1,0,1`) para escenarios de error, duplicidad, falla o exito.
 
 Reglas de formato/transformacion:
+
 - Parametros Variables convierte plantilla diaria a historico con `FECHAINI` por dia y `FECHAFIN` fijo `2222-02-22`.
 - MatrizCuenta transforma `NSE` (`SI -> X`, `NO -> NSE`) antes de persistir.
 
 ## 78. Exportaciones (Excel) en 2B.1
+
 | Pantalla | Tipo de salida | Fuente de datos |
 | --- | --- | --- |
 | Parametros Fijos | Listado `Parametro_Fijo.xlsx` | `EB_OBTIENEPARAMETROS` (`TIPOPARAMETRO=FIJO`) |
@@ -1356,83 +1403,101 @@ Reglas de formato/transformacion:
 | Ajustes | Plantilla `Ajustes.xlsx` base | Archivo local de plantilla (sin query de datos transaccionales) |
 
 ## 79. Importaciones / carga masiva en 2B.1
+
 | Pantalla | Entrada | Persistencia visible |
 | --- | --- | --- |
 | Parametros Variables | Excel de plantilla por dias/parametro | `DELETE` por periodo + `SqlBulkCopy` sobre `EB_HM_PARAMETRO` |
 | Ajustes | Excel hoja `AJUSTES` (dias 01..31 + metadatos) | SP `EB_AJUSTE_MASIVO_INSERT` con TVP |
 
 ## 80. Procesos y disparadores externos del slice
+
 | Caso | Naturaleza | Contrato visible |
 | --- | --- | --- |
 | Replica de Parametros Variables | Proceso de preparacion de historico mensual | `EB_PARAMETRO_VARIABLE_PREPARAR` |
 | Kill Job desde MatrizCuenta | Disparo tecnico externo sobre SQL Agent/collector | `EB_KILL_JOB_COLLECTOR` |
 
 ## 81. Dependencias cruzadas relevantes
-1. `ParametrosVariables.js` consulta el listado maestro via `ParametrosFijos.aspx/ListaParametros` usando `Categoria 'Variable'`.
-2. Ajustes y Matriz dependen de catalogos transversales (`INPUT`, `TIPO`, `MONEDA`, `RUBRO`) servidos por SP comunes (`EB_LISTA`, `EB_SP_INPUT_CMB`, `EB_SP_RUBRO_LISTAR_CMB`).
-3. Persistencias de mantenimiento se concentran en `rom_Encaje`; no se observa uso de `rom_EncajeHF` en este slice.
+
+1. `ParametrosVariables.js` consulta el listado maestro via `ParametrosFijos.aspx/ListaParametros` usando `Categoria='Variable'`.
+2. Ajustes y Matriz dependen de catalogos transversales (`INPUT`, `TIPO`, `MONEDA`, `RUBRO`) servidos por SP comunes (`EB_LISTA*`, `EB_SP_INPUT_CMB`, `EB_SP_RUBRO_LISTAR_CMB`).
+3. Persistencias de mantenimiento se concentran en `cnn_Encaje`; no se observa uso de `cnn_EncajeAE` en este slice.
 
 ## 82. Riesgos y anomalias confirmadas en 2B.1
+
 1. Inconsistencia de sesion (`Usuario` vs `usuario`) en modulos del mismo dominio de mantenimiento.
 2. Inconsistencia estructural en Rubros: `Rubros.aspx.cs` invoca `LRubro.Listar(filtro,input)` pero en BL/DA leidos el metodo aparece comentado/no visible.
 3. `ParametrosVariables.js` ejecuta multiples `ActualizaHistParVar` por dia y luego `ActualizaParametro` sin coordinacion de completitud de todas las llamadas AJAX.
-4. En `ParametrosVariables.CargarExcel`, el bucle `for (int j = 1; j < totalRows; j++)` no procesa la ultima fila de la hoja.
-5. En `Ajustes.js`, la construccion del combo de moneda (`1` + `001`) puede desacoplarse de codigos reales si el SP cambia formato.
+4. En `ParametrosVariables.CargarExcel`, el bucle `for (int j = 3; j < totalRows; j++)` no procesa la ultima fila de la hoja.
+5. En `Ajustes.js`, la construccion del combo de moneda (`i + "001"`) puede desacoplarse de codigos reales si el SP cambia formato.
 6. `MatrizCuenta.js` envia parametro `usuario` en `Eliminar`, pero el WebMethod expone firma sin dicho parametro.
 7. En `MatrizCuenta.js`, selector `#btnCrearMatriz Cuenta` (con espacio) en `complete` de edicion sugiere bug de re-habilitacion visual del boton.
 8. En Rubros, la decision cliente `CODRUBRO ? "ActualizarRubro" : "InsertarRubro"` no se basa en `IDRUBRO`, lo que puede volver ambiguo el alta vs edicion.
 
 ## 83. Fronteras de incertidumbre 2B.1 (`NO DETERMINADO`)
+
 Se mantiene `NO DETERMINADO` en:
+
 - Logica interna de SP de mantenimiento (`EB_SP_MATRIZCTA_UPD`, `EB_SP_RUBRO_ACTUALIZAR`, `EB_INSERTAAJUSTES`, etc.) respecto a validaciones, locks y transacciones internas.
 - Contrato exacto de `Rubros.aspx/ListarRubros` en runtime dado el desalineamiento BL/DA visible en codigo fuente leido.
 - Semantica operacional completa del kill job (`EB_KILL_JOB_COLLECTOR`) sobre procesos externos activos.
 - Alcance real de impacto temporal de replica de parametros variables en periodos historicos fuera del mes objetivo.
 
 ## 84. Estado de avance de Pasada 2B tras 2B.1
+
 Estado de este slice:
+
 - `PASADA 2B.1 - Configuracion y Mantenimientos`: COMPLETADA a nivel documental AS-IS con trazabilidad endpoint->BL->DA->SP/SQL, clasificacion operativa, sincronia, precondiciones, estado web, transacciones, reglas, riesgos y preguntas abiertas.
 
 Estado global de 2B:
+
 - `PASADA 2B`: EN CURSO (no cerrada en este documento); se conserva abierta para slices adicionales fuera de configuracion/mantenimientos.
 
 ## 85. Objetivo operativo de Pasada 2B.2 (reporteria avanzada y cierre integral)
+
 Objetivo de este slice:
-- Completar el mapa tecnico AS-IS de reporteria regulatoria avanzada (`R1`, `R3`, `R4`, `Gerencial`, `Integridad TOSE Resumen/Detalle`) y consolidarlo contra baseline `R1`/`R5`.
+
+- Completar el mapa tecnico AS-IS de reporteria regulatoria avanzada (`R2`, `R3`, `R4`, `Gerencial`, `Integridad TOSE Resumen/Detalle`) y consolidarlo contra baseline `R1`/`R5`.
 - Clasificar componentes tecnicos transversales (`DataCollectors`, `ProcesaReportes`) con evidencia de consumidores.
 - Cerrar semantica observable de multirol AD/DB (Q2A-06) y clasificacion de `ListaCargaInputs`/pantalla tecnica (Q2A-08).
 - Emitir gates formales de cierre y estado final de `PASADA 2B`.
 
 Restricciones aplicadas en 2B.2:
+
 - Analisis estatico C#/ASPX/JS (modo AS-IS).
 - Sin ingenieria inversa de internos SQL/SSIS.
 - Sin cambios de codigo aplicativo en este slice.
 
 ## 86. Alcance efectivo y fuentes de evidencia 2B.2
+
 Cobertura analizada en este slice:
+
 - Reportes regulatorios: `Reporte1`, `Reporte2`, `Reporte3`, `Reporte4`, `Reporte5`.
 - Validacion/control: `ReporteGerencial`, `ReporteValidacion`, `ReporteValidacionDetalle`.
 - Componentes tecnicos: `DataCollectors`, `ProcesaReportes`.
 - Cadena de permisos/multirol: `Global.asax`, `ActDirectory`, `LActDirectory`, `DAActDirectory`, `Site.Master`.
 
 Fuentes tecnicas trazadas:
+
 - Capa WEB (`.aspx`, `.aspx.cs`, `.js`).
 - Capa BL/DA asociada.
 - Contratos visibles de SP/SQL invocados desde DA.
 
 ## 87. Reportes R2-R4: descomposicion tecnica consolidada
+
 | Reporte | Permiso | Estado server-side relevante | Excel/versionado | TXT | Contratos SP visibles |
 | --- | --- | --- | --- | --- | --- |
-| R2 | `OP_Reporte2` | Session intensiva: `dtCabecera_0/1`, `dtSwiftOpe_0/1`, `dtReporteInf_0/1`, `dtNombGrupo_0/1` | Plantilla `Reporte_2.xlsx`; versionado `Count_Reporte_Version(0)` + `Insertar_Reporte_Version(0)` | `EB_REPORTE2_txt` | `EB_SP_REPORTE2_SELECT_CAB_WEB`, `EB_SP_REPORTE2_SELECT_SWIFT_OPERACION_WEB`, `EB_SP_REPORTE2_SELECT_WEB`, `EB_SP_REPORTE2_SELECT_INPUT_ME`, `EB_SP_REPORTE2_SELECT_INPUT_MN` |
-| R3 | `OP_Reporte3` | Session: `dtCabecera3_0/1`, `dtReporteInf3_0/1` | Plantilla `Reporte3.xlsx`; versionado codigo `5` | `EB_REPORTE3_txt` | (DA/BL de R3) + validacion previa `Util.Validar_Reportes(codnes,2)` |
+| R2 | `OP_Reporte2` | Session intensiva: `dtCabecera_0/1`, `dtSwitfOpe_0/1`, `dtReporteInf_0/1`, `dtNombGrupo_0/1` | Plantilla `Reporte_2.xlsx`; versionado `Count_Reporte_Version(9)` + `Insertar_Reporte_Version(9)` | `EB_REPORTE2_txt` | `EB_SP_REPORTE2_SELECT_CAB_WEB`, `EB_SP_REPORTE2_SELECT_SWITF_OPERACION_WEB`, `EB_SP_REPORTE2_SELECT_WEB`, `EB_SP_REPORTE2_SELECT_INPUT_ME`, `EB_SP_REPORTE2_SELECT_INPUT_MN` |
+| R3 | `OP_Reporte3` | Session: `dtCabecera3_0/1`, `dtReporteInf3_0/1` | Plantilla `Reporte3.xlsx`; versionado codigo `5` | `EB_REPORTE3_txt` | (DA/BL de R3) + validacion previa `Util.Validar_Reportes(codmes,2)` |
 | R4 | `OP_Reporte4` | Session: `dtCabecera4_0/1`, `dtOpe4_0/1`, `dtReporteInf4_0/1` | Plantilla `Reporte4.xlsx`; versionado codigo `7` | `EB_REPORTE4_txt` | `EB_SP_REPORTE4_SELECT`, `EB_SP_REPORTE4_SELECT_WEB`, `EB_SP_REPORTE4_MN_SELECT`, `EB_SP_REPORTE4_ME_SELECT` |
 
 Hallazgos tecnicos transversales R2-R4:
+
 1. Los tres reportes dependen de precondicion de datos procesados (`Util.Validar_Reportes(...,2)`) en su camino de generacion.
 2. `R3.js` y `R4.js` consumen endpoints AJAX de `Reporte1.aspx` (`ValidarPeriodo`, `ListarMN`, `ListarME`) para poblar UI.
 3. En `Reporte4.aspx.cs`, los WebMethods `ListarMN/ListarME` exponen llamadas hardcodeadas (`Select_Reporte4_MN/ME(1,1,1)`), desacopladas de parametros de usuario.
 
 ## 88. Matriz comparativa R1-R5 (arquitectura observable)
+
 | Dimension | R1 | R2 | R3 | R4 | R5 |
 | --- | --- | --- | --- | --- | --- |
 | Permiso pagina | `OP_Reporte1` | `OP_Reporte2` | `OP_Reporte3` | `OP_Reporte4` | `OP_Reporte5` |
@@ -1445,7 +1510,9 @@ Hallazgos tecnicos transversales R2-R4:
 | Broad SQL Agent | Si (`RPT1MN/ME`) | No visible | No visible | No visible | Si (`RPT5MN/ME`) |
 
 ## 89. Patron comun de reporteria y acoplamiento efectivo
+
 Patron tecnico predominante:
+
 1. Validacion de fecha/periodo en JS/WebMethod.
 2. Consulta via BL/DA contra SP.
 3. Persistencia temporal en `Session` (segun reporte) o render directo a grilla.
@@ -1473,9 +1540,9 @@ flowchart LR
 
 | Capacidad | Entrada funcional | Contrato de datos | Salida | Versionado visible |
 | --- | --- | --- | --- | --- |
-| Resumen Reporte 5 | Rango fecha `desde/hasta` | `EB_SP_REPORTE_DIARIO_SELECT` (`TIPO='Resumen_Reporte5'`, MN/ME) | Grilla + Excel `Plantilla_DDO.xlsx` | `tipo_rep=101` |
-| Resumen Reporte 1 | Rango fecha | `EB_SP_REPORTE_DIARIO_SELECT` (`TIPO='Resumen_Reporte1'`) | Grilla + Excel `Plantilla_DDO.xlsx` | `tipo_rep=103` |
-| Comparativo R1-R5 | Rango fecha | `EB_SP_REPORTE_DIARIO_SELECT` (`TIPO='Comparativo_Reporte_1_5'`) | Grilla + Excel `Plantilla_DDO.xlsx` | `tipo_rep=102` |
+| Resumen Reporte 5 | Rango fecha `desde/hasta` | `EB_SP_REPORTE_DIARIO_SELECT` (`TIPO='Resumen_Reporte5'`, MN/ME) | Grilla + Excel `Plantilla_DDD.xlsx` | `tipo_rep=101` |
+| Resumen Reporte 1 | Rango fecha | `EB_SP_REPORTE_DIARIO_SELECT` (`TIPO='Resumen_Reporte1'`) | Grilla + Excel `Plantilla_DDD.xlsx` | `tipo_rep=103` |
+| Comparativo R1-R5 | Rango fecha | `EB_SP_REPORTE_DIARIO_SELECT` (`TIPO='Comparativo_Reporte_1_5'`) | Grilla + Excel `Plantilla_DDD.xlsx` | `tipo_rep=102` |
 | Reporte de Saldos | Rango fecha | `EB_SP_REPORTE_INTEGRIDAD_TOSE_SELECT` | Excel `Plantilla_Integridad_del_TOSE.xlsx` | `tipo_rep=104` |
 | Reporte de Inputs | Rango fecha | `EB_SP_REPORTE_CONTROLD_SELECT` / `EB_SP_REPORTE_CONTROLM_SELECT` | Excel `Plantilla_Control.xlsx` | `tipo_rep=107` (diario), `106` (mes) |
 | Reporte de Ajustes | Rango fecha | `EB_SP_REPORTE_AJUSTE_SELECT` | Excel `Plantilla_Ajuste.xlsx` | No visible |
@@ -1495,23 +1562,23 @@ Notas AS-IS relevantes:
 
 Dependencia adicional en Resumen TOSE:
 
-* El drilldown de trazabilidad usa `EncajeBancario.aspx/ObtenerTrazabilidad` (acoplamiento cruzado fuera de la pantalla TOSE).
+- El drilldown de trazabilidad usa `EncajeBancario.aspx/ObtenerTrazabilidad` (acoplamiento cruzado fuera de la pantalla TOSE).
 
 ## 92. Defecto de autorizacion observable en TOSE (menu vs pagina)
 
 Desalineacion detectada:
 
 1. Navegacion (`Site.Master.cs`) controla visibilidad:
-* `opReporte7` con `OP_Reporte7`.
-* `opReporte8` con `OP_Reporte8`.
 
+- `opReporte7` con `OP_Reporte7`.
+- `opReporte8` con `OP_Reporte8`.
 
 2. Las paginas reales `ReporteValidacion` y `ReporteValidacionDetalle` validan `OP_Reporte6` en `Page_Load`.
 
 Impacto AS-IS:
 
-* Un usuario con `OP_Reporte7/8` pero sin `OP_Reporte6` puede ver opcion de menu y terminar en denegacion al entrar.
-* Un usuario con `OP_Reporte6` y sin `OP_Reporte7/8` podria no ver menu, pero si conoce URL directa pasaria el gate de pagina.
+- Un usuario con `OP_Reporte7/8` pero sin `OP_Reporte6` puede ver opcion de menu y terminar en denegacion al entrar.
+- Un usuario con `OP_Reporte6` y sin `OP_Reporte7/8` podria no ver menu, pero si conoce URL directa pasaria el gate de pagina.
 
 ## 93. Componentes tecnicos: DataCollectors y ProcesaReportes (Q2A-08)
 
@@ -1522,43 +1589,43 @@ Impacto AS-IS:
 
 Estado Q2A-08:
 
-* `CERRADO` a nivel AS-IS documental: ambos componentes quedan clasificados como tecnicos/no funcionales para flujo usuario final, con evidencia de no-consumo observable en codigo web.
+- `CERRADO` a nivel AS-IS documental: ambos componentes quedan clasificados como tecnicos/no funcionales para flujo usuario final, con evidencia de no-consumo observable en codigo web.
 
 ## 94. Semantica multirol AD/DB (Q2A-06)
 
 Cadena observada:
 
-1. `Session_Start` carga `Session["Usuario"]` - `ActDirectory.ObtenerUser(LOGON_USER)` y `Session["Permisos"]` - `OperacionesPermitidas`.
+1. `Session_Start` carga `Session["Usuario"] = ActDirectory.ObtenerUser(LOGON_USER)` y `Session["Permisos"] = OperacionesPermitidas`.
 2. `ActDirectory.ObtenerUser` cruza:
-* Roles desde AD (`memberOf` filtrado por `CodigoApp`, excluye `INC`).
-* Roles desde BD (`AD_OBTENER_ROLES`).
 
+- Roles desde AD (`memberOf` filtrado por `CodigoApp`, excluye `INC`).
+- Roles desde BD (`AD_OBTENER_ROLES`).
 
 3. Por cada rol AD mapeado a rol BD, obtiene operaciones (`AD_OBTENER_OPERACIONES_POR_ROL`) y arma union en `Dictionary<int,string>`.
 
 Semantica resultante (observable):
 
-* Modelo: **union aditiva de permisos** por rol.
-* Deduplicacion: por clave `COD_OPERATION` (si ya existe no vuelve a insertar).
-* Precedencia/denegacion explicita: no visible (no hay regla deny/override).
-* Evaluacion final en paginas/menu: `FindContentPermisos` valida presencia de al menos una operacion requerida.
+- Modelo: **union aditiva de permisos** por rol.
+- Deduplicacion: por clave `COD_OPERATION` (si ya existe no vuelve a insertar).
+- Precedencia/denegacion explicita: no visible (no hay regla deny/override).
+- Evaluacion final en paginas/menu: `FindContentPermises` valida presencia de al menos una operacion requerida.
 
 Riesgo puntual en multirol:
 
-* `userlogon.Administrador` se sobreescribe por iteracion (`Contains(appNombre + "_Administrador")` del rol actual), por lo que depende del ultimo rol procesado.
+- `userLogon.Administrador` se sobreescribe por iteracion (`Contains(appNombre + "_Administrador")` del rol actual), por lo que depende del ultimo rol procesado.
 
 Estado Q2A-06:
 
-* `CERRADO` para semantica de union/dedup/autorizacion observable en C#.
+- `CERRADO` para semantica de union/dedup/autorizacion observable en C#.
 
 ## 95. Matriz de estado web/sesion en reporteria avanzada
 
 | Superficie | Estado en cliente | Estado en servidor | Observacion operativa |
 | --- | --- | --- | --- |
 | R1 | Fecha + tablas + modal traza | Sin `Session` de dataset (si `Permisos`/`Usuario`) | Consulta AJAX directa + export server-side |
-| R2 | Fecha/tab MN-ME | `Session[dtCabecera_* | dtReporteInf_* |
-| R3 | Fecha/tab MN-ME | `Session[dtCabecera3_* | dtReporteInf3_*]` |
-| R4 | Fecha/tab MN-ME | `Session[dtCabecera4_* | dtOpe4_* |
+| R2 | Fecha/tab MN-ME | `Session[dtCabecera_*/dtSwitfOpe_*/dtReporteInf_*/dtNombGrupo_*]` | Reuso de ession para generacion Excel |
+| R3 | Fecha/tab MN-ME | `Session[dtCabecera3_*/dtReporteInf3_*]` | UI acoplada a endpoints de R1 |
+| R4 | Fecha/tab MN-ME | `Session[dtCabecera4_*/dtOpe4_*/dtReporteInf4_*]` | WebMethods de listado hardcodeados |
 | R5 | Fecha/tab MN-ME | Sin `Session` de dataset dedicada | Flujo simple lista/exporta |
 | Gerencial | Rango fechas + tabs funcionales | Hidden fields + consultas por request | Carga secuencial de 6 bloques de reporte |
 | TOSE Resumen | Fecha + tipo D/M + labels | Sin cache session especifica de dataset | Drilldown via trazabilidad de Encaje |
@@ -1573,7 +1640,7 @@ Estado Q2A-06:
 | Reporte3 | `Reporte3.xlsx` | Si (`cod 5`) | Excel + TXT |
 | Reporte4 | `Reporte4.xlsx` | Si (`cod 7`) | Excel + TXT |
 | Reporte5 | `Reporte5.xlsx` | No visible | Excel + TXT + broad opcional |
-| ReporteGerencial (Res/Comp) | `Plantilla_DDO.xlsx` | Si (`101`, `102`, `103`) | Excel |
+| ReporteGerencial (Res/Comp) | `Plantilla_DDD.xlsx` | Si (`101`, `102`, `103`) | Excel |
 | ReporteGerencial (Saldos) | `Plantilla_Integridad_del_TOSE.xlsx` | Si (`104`) | Excel |
 | ReporteGerencial (Inputs) | `Plantilla_Control.xlsx` | Si (`106`, `107`) | Excel |
 | ReporteGerencial (Ajustes) | `Plantilla_Ajuste.xlsx` | No visible | Excel |
@@ -1587,10 +1654,10 @@ Estado Q2A-06:
 | `ReporteGerencial.aspx/ListarReporteDiarioDiferDefin` | `LReporte_Gerencial.Listar_Reporte_Diario_Difer_Defin` | `DAReporte_Gerencial.Listar_Reporte_Diario_Difer_Defin` | `EB_SP_REPORTE_DIARIO_SELECT` |
 | `ReporteGerencial.aspx/ListarReporteIntegTOSE` | `LReporte_Gerencial.Listar_Reporte_Integridad_del_TOSE` | `DAReporte_Gerencial.Listar_Reporte_Integridad_del_TOSE` | `EB_SP_REPORTE_INTEGRIDAD_TOSE_SELECT` |
 | `ReporteGerencial.aspx/ListarReporteCuentas` | `LReporte_Gerencial.Listar_Reporte_Cuentas` | `DAReporte_Gerencial.Listar_Reporte_Cuentas` | `EB_SP_REPORTE_CUENTAS_SELECT_TODO` |
-| `ReporteGerencial.btnGenerar` (DDO) | `Select_Reporte_Diario_Diferenciado_D` + versionado | `DAReporte_Gerencial.Select_Reporte_Diario_Diferenciado_D` | `EB_SP_REPORTE_DIARIO_SELECT` + `EB_SP_REPORTE_VERSION_LISTA/INSERT` |
+| `ReporteGerencial.btnGenerar*` (DDD) | `Select_Reporte_Diario_Diferenciado_D` + versionado | `DAReporte_Gerencial.Select_Reporte_Diario_Diferenciado_D` | `EB_SP_REPORTE_DIARIO_SELECT` + `EB_SP_REPORTE_VERSION_LISTA/INSERT` |
 | `ReporteGerencial.btnGenerarIntegridad_Click` | `Select_Reporte_Integridad_del_TOSE` + versionado | `DAReporte_Gerencial.Select_Reporte_Integridad_del_TOSE` | `EB_SP_REPORTE_INTEGRIDAD_TOSE_SELECT` + `EB_SP_REPORTE_VERSION_LISTA/INSERT` |
 | `ReporteGerencial.btnGeneralControlDiario_Click` | `Select_Reporte_ControlD` + versionado | `DAReporte_Gerencial.Select_Reporte_ControlD` | `EB_SP_REPORTE_CONTROLD_SELECT` + versionado |
-| `ReporteGerencial.btnGeneralControlMes_Click` | `Select_Reporte_ControlM` + versionado | `DAReporte_Gerencial.Select_Reporte_ControlM` | `EB_SP_REPORTE_CONTROLM_SELECT` + versionado |
+| `ReporteGerencial.btnGenerlControlMes_Click` | `Select_Reporte_ControlM` + versionado | `DAReporte_Gerencial.Select_Reporte_ControlM` | `EB_SP_REPORTE_CONTROLM_SELECT` + versionado |
 | `ReporteGerencial.btnAjustes_Click` | `Select_Reporte_Ajuste` | `DAReporte_Gerencial.Select_Reporte_Ajuste` | `EB_SP_REPORTE_AJUSTE_SELECT` |
 | `ReporteValidacion.aspx/ReporteMostrar` | `LReporte_Gerencial.MostrarValidacion` | `DAReporte_Gerencial.MostrarValidacion` | `EB_SP_REPORTE_VC_TOSE_DIA` / `EB_SP_REPORTE_VC_TOSE_MES` |
 | `ReporteValidacionDetalle.btnGenerar_Click` | `LReporte_Gerencial.MostrarValidacionDetalle` | `DAReporte_Gerencial.MostrarValidacionDetalle` | `EB_SP_REPORTE_VC_TOSE_DIA_DETALLE` / `EB_SP_REPORTE_VC_TOSE_MES_DETALLE` |
@@ -1608,7 +1675,7 @@ Dependencias fuertes confirmadas:
 
 Chequeo literal solicitado (`rom_Encaje` / `rom_EncajeHF`):
 
-* No se hallaron ocurrencias en el codigo/documento analizado en esta pasada.
+- No se hallaron ocurrencias en el codigo/documento analizado en esta pasada.
 
 ## 99. Riesgos y deuda tecnica confirmados en 2B.2
 
@@ -1624,10 +1691,10 @@ Chequeo literal solicitado (`rom_Encaje` / `rom_EncajeHF`):
 
 Se mantiene `NO DETERMINADO` en:
 
-* Logica interna de calculo y validacion de SP de reporteria (`EB_SP_REPORTE_DIARIO_SELECT`, `EB_SP_REPORTE_VC_TOSE_*`, etc.).
-* Existencia/configuracion efectiva de operaciones `OP_Reporte7`/`OP_Reporte8` en catalogo de roles productivo (no visible en este codigo).
-* Uso operacional real en produccion de `DataCollectors`/`ProcesaReportes` fuera de rutas web observables.
-* Semantica interna de jobs SQL Agent lanzados por broad y su SLA de finalizacion.
+- Logica interna de calculo y validacion de SP de reporteria (`EB_SP_REPORTE_DIARIO_SELECT`, `EB_SP_REPORTE_VC_TOSE_*`, etc.).
+- Existencia/configuracion efectiva de operaciones `OP_Reporte7`/`OP_Reporte8` en catalogo de roles productivo (no visible en este codigo).
+- Uso operacional real en produccion de `DataCollectors`/`ProcesaReportes` fuera de rutas web observables.
+- Semantica interna de jobs SQL Agent lanzados por broad y su SLA de finalizacion.
 
 ## 101. Gates formales de cierre de PASADA 2B
 
@@ -1643,13 +1710,13 @@ Se mantiene `NO DETERMINADO` en:
 
 Resultado formal de gates:
 
-* No existen estados `NO CUMPLIDO`.
+- No existen estados `NO CUMPLIDO`.
 
 ## 102. Cierre integral de PASADA 2B
 
 Conclusion ejecutiva:
 
-* `PASADA 2B - COMPLETA`.
+- `PASADA 2B - COMPLETA`.
 
 Alcance final cubierto en 2B:
 
@@ -1659,15 +1726,20 @@ Alcance final cubierto en 2B:
 
 Estado posterior recomendado para siguientes pasadas:
 
-* Mantener pendientes unicamente las fronteras `NO DETERMINADO` que dependen de evidencia fuera de C# (internos de SP/SSIS y operacion productiva).
+- Mantener pendientes unicamente las fronteras `NO DETERMINADO` que dependen de evidencia fuera de C# (internos de SP/SSIS y operacion productiva).
 
 # PASADA 2C - ANEXO 10 PROFUNDO
+
 ## 103. Objetivo y alcance 2C
+
 Pregunta rectora de esta pasada:
+
 - Como funciona realmente Anexo 10 de extremo a extremo dentro de la aplicacion legacy (flujos, reglas visibles, persistencia observable y trazabilidad E2E desde codigo).
 
 Alcance efectivo de 2C:
+
 - 7 paginas funcionales de Anexo 10:
+
 1. `Views/Anexo10/Inputs.aspx`
 2. `Views/Anexo10/Ajustes/AnexoB.aspx`
 3. `Views/Anexo10/Ajustes/MaestroOficinas.aspx`
@@ -1675,9 +1747,11 @@ Alcance efectivo de 2C:
 5. `Views/Anexo10/Ajustes/SucursalExterior.aspx`
 6. `Views/Anexo10/ActaConciliacion.aspx`
 7. `Views/Anexo10/ReporteFinal.aspx`
+
 - Componentes transversales usados por esos flujos: `SiteAnexo10.Master(.cs)`, `LAnexo10`, `DAAnexo10`, `helper`, `Flash`, `ValidacionException`, `UsuarioAD`.
 
 Fuera de alcance en esta pasada:
+
 - Reverse engineering interno de SP.
 - Consulta directa a BD.
 - Decision de boundaries definitivos.
@@ -1685,12 +1759,15 @@ Fuera de alcance en esta pasada:
 - Profundizacion BSEC.
 
 Baseline operativo mantenido:
+
 - Rama de trabajo: `feature/NIIFRRCC-18028-migracion-e079`.
 - Sin cambio de rama ni inspeccion de rama alternativa.
 - Sin cambios de codigo aplicativo; solo actualizacion documental.
 
 ## 104. Macroflujo funcional Anexo 10
+
 Casos de uso troncales identificados:
+
 - `F2C-01`: Gestion de tipo de cambio mensual.
 - `F2C-02`: Carga multiarchivo de Inputs y consolidacion.
 - `F2C-03`: Ajustes Anexo B (cierres temporales/definitivos).
@@ -1701,28 +1778,29 @@ Casos de uso troncales identificados:
 - `F2C-08`: Reporte Final (`.110` + Excel + ZIP).
 
 Clasificacion de relaciones de flujo:
+
 - Obligatorio observado por codigo: `F2C-01` y `F2C-02` para la carga mensual completa de Inputs.
 - Opcional observado por codigo: `F2C-03`..`F2C-06` (no hay gate tecnico que fuerce su ejecucion previa).
 - Dependencia inferida por datos (no gate explicito): `F2C-02` alimenta resultados usados en `F2C-07` y potencialmente en `F2C-08` via SP.
 
 ```mermaid
 flowchart TD
-    A[Seleccion de mes] --> B[F2C-01 Registrar/consultar tipo de cambio]
-    B --> C[F2C-02 Cargar 5 archivos Inputs]
-    C --> D[Persistir resumen inputs y personal]
-    D --> E[F2C-07 Acta de Conciliacion]
-    D --> F[F2C-08 Reporte Final]
+A[Seleccion de mes] --> B[F2C-01 Registrar/consultar tipo de cambio]
+B --> C[F2C-02 Cargar 5 archivos Inputs]
+C --> D[Persistir resumen inputs y personal]
+D --> E[F2C-07 Acta de Conciliacion]
+D --> F[F2C-08 Reporte Final]
 
-    C -. opcional .-> G[F2C-03 Anexo B]
-    C -. opcional .-> H[F2C-04 Maestro de Oficinas]
-    C -. opcional .-> I[F2C-05 Redondeo de Saldos]
-    C -. opcional .-> J[F2C-06 Sucursal Exterior]
+C -. opcional .-> G[F2C-03 Anexo B]
+C -. opcional .-> H[F2C-04 Maestro de Oficinas]
+C -. opcional .-> I[F2C-05 Redondeo de Saldos]
+C -. opcional .-> J[F2C-06 Sucursal Exterior]
 
-    G -. dependencia por datos de mes .-> E
-    H -. dependencia por datos de mes .-> F
-    I -. dependencia por datos de mes .-> F
-    J -. dependencia por datos de mes .-> E
-    J -. dependencia por datos de mes .-> F
+G -. dependencia por datos de mes .-> E
+H -. dependencia por datos de mes .-> F
+I -. dependencia por datos de mes .-> F
+J -. dependencia por datos de mes .-> E
+J -. dependencia por datos de mes .-> F
 
 ```
 
@@ -1738,7 +1816,7 @@ Ficha estandar del flujo principal:
 | Actor/permisos | `Usuario` con `OP_Anexo10` (gate en `Page_Load` y menu). |
 | Pantalla | `Views/Anexo10/Inputs.aspx` |
 | Precondiciones | Mes valido `yyyy-MM`; tipo de cambio registrado en el mes (`ViewState["TIPO_CAMBIO"]` no nulo); 5 archivos presentes. |
-| Inputs | `txtFecha`, `txtTipoCambio`, `fuArchivos` (`AllowMultiple=true`). |
+| Inputs | `txtFecha`, `txtTipoCambio`, `fuArchivos` (`AllowMultiple=true`).|
 | Validaciones | Conteo exacto de archivos, extension Excel, tipos de archivo requeridos por nombre, estructura (hoja/columnas), consistencias de periodo/valor. |
 | Pasos | 1. Validar fecha. 2. Validar tipo de cambio. 3. Validar archivos requeridos. 4. Validar estructura por archivo. 5. Transformar a `DataTable` por origen. 6. Consolidar a `dtResumenInputs`. 7. Persistir TVP resumen + TVP personal. 8. Guardar resumenes en Session y habilitar descarga. |
 | BL | `Select_Producto_Cuenta_Raiz`, `GetTipoCambio`, `SetTipoCambio`, `Insert_Resumen_Inputs`, `Insert_Personal_Agencias`. |
@@ -1746,7 +1824,7 @@ Ficha estandar del flujo principal:
 | SP | `SP_A10_PRODUCTO_CUENTA_RAIZ_SELECT`, `SP_A10_GET_TIPO_CAMBIO`, `SP_A10_SET_TIPO_CAMBIO`, `SP_A10_SET_RESUMEN_INPUTS`, `SP_A10_SET_PERSONAL_AGENCIA`. |
 | Operacion | `IMPORT` + `PROCESS` + `WRITE` (+ `EXPORT` de resumen en accion separada). |
 | Estado Web | `Session` (`dyProductoCuentaRaiz`, `dtResumen*`, `Usuario`), `ViewState` (`TIPO_CAMBIO`, `CODIGO_MES`, `dtValoresColoc`, `Agencia515`), `QueryString` (`Mes`, `Descargar`). |
-| Archivos | Entradas: 5 Excel de usuario. Salida: `Resumenes-{CODIGO_MES}.xlsx`. |
+| Archivos | Entradas: 5 Excel de usuario. Salida: `Resumenes-{CODIGO_MES}.xlsx`.|
 | Output | Mensaje flash de exito y habilitacion de boton descargar (`Descargar=1`). |
 | Error | `ValidacionException` -> warning y redirect; `Exception` -> log + flash error + redirect. |
 | Dependencias | Acta y Reporte Final consultan informacion mensual por SP (dependencia por datos, no por llamada directa entre paginas). |
@@ -1786,7 +1864,7 @@ Flujo especifico `F2C-01`:
 
 Regla de precondicion critica:
 
-* Si `ViewState["TIPO_CAMBIO"]` es nulo/vacio, la carga de archivos se bloquea con `ValidacionException`.
+- Si `ViewState["TIPO_CAMBIO"]` es nulo/vacio, la carga de archivos se bloquea con `ValidacionException`.
 
 ## 107. Archivos de entrada y validaciones
 
@@ -1802,9 +1880,9 @@ Regla de precondicion critica:
 
 Reglas de orquestacion de carga:
 
-* Conteo obligatorio: exactamente 5 archivos.
-* No hay carga parcial: si una validacion falla, se aborta toda la accion `btnCargarArchivos_Click`.
-* Orden interno de validacion/procesamiento: `ag 515` -> `balance` -> `cubo` -> `leasing` -> `reporte sbs`.
+- Conteo obligatorio: exactamente 5 archivos.
+- No hay carga parcial: si una validacion falla, se aborta toda la accion `btnCargarArchivos_Click`.
+- Orden interno de validacion/procesamiento: `ag 515` -> `balance` -> `cubo` -> `leasing` -> `reporte sbs`.
 
 ### 107.2 Catalogo consolidado de validaciones
 
@@ -1845,9 +1923,9 @@ No existe boton separado de "consolidar"; la consolidacion ocurre dentro de `btn
 
 ### 108.3 Comportamiento ante error parcial y reproceso
 
-* Si falla cualquier validacion previa, no se ejecuta persistencia.
-* Si falla la segunda persistencia (`SP_A10_SET_PERSONAL_AGENCIA`) despues de la primera, no hay rollback visible en C# de la primera llamada.
-* Reproceso (CONCILIADO DB0-DB1 — HECHO VERIFICADO SQL): `SP_A10_SET_RESUMEN_INPUTS` y `SP_A10_SET_PERSONAL_AGENCIA` ejecutan `DELETE` por `CODIGO_MES`, **exceptuando agencias 334/336**, e `INSERT` desde TVP. No es correcto afirmar un borrado incondicional de todas las agencias del periodo. En DB1 no se observaron `BEGIN TRAN/COMMIT/ROLLBACK` explicitos en estas semillas; la atomicidad de las dos llamadas desde C# no esta garantizada por una transaccion visible y los escenarios de fallo inter-SP permanecen pendientes.
+- Si falla cualquier validacion previa, no se ejecuta persistencia.
+- Si falla la segunda persistencia (`SP_A10_SET_PERSONAL_AGENCIA`) despues de la primera, no hay rollback visible en C# de la primera llamada.
+- Reproceso (CONCILIADO DB0-DB1 — HECHO VERIFICADO SQL): `SP_A10_SET_RESUMEN_INPUTS` y `SP_A10_SET_PERSONAL_AGENCIA` ejecutan `DELETE` por `CODIGO_MES`, **exceptuando agencias 334/336**, e `INSERT` desde TVP. No es correcto afirmar un borrado incondicional de todas las agencias del periodo. En DB1 no se observaron `BEGIN TRAN/COMMIT/ROLLBACK` explicitos en estas semillas; la atomicidad de las dos llamadas desde C# no esta garantizada por una transaccion visible y los escenarios de fallo inter-SP permanecen pendientes.
 
 ### 108.4 Secuencia E2E de Inputs
 
@@ -1879,16 +1957,16 @@ sequenceDiagram
 
 Resumenes generados localmente y guardados en Session:
 
-* `dtResumenLeasing`
-* `dtResumenCubo`
-* `dtResumenSaldos`
-* `dtResumenReporteSBS`
-* `dtResumenBalanceComprobacion`
+- `dtResumenLeasing`
+- `dtResumenCubo`
+- `dtResumenSaldos`
+- `dtResumenReporteSBS`
+- `dtResumenBalanceComprobacion`
 
 Generacion y consumo:
 
-* Productor: `btnCargarArchivos_Click` (`GuardarResumenesEnSession`).
-* Consumidor: `btnDescargar_Click` (arma `Resumenes-{CODIGO_MES}.xlsx`).
+- Productor: `btnCargarArchivos_Click` (`GuardarResumenesEnSession`).
+- Consumidor: `btnDescargar_Click` (arma `Resumenes-{CODIGO_MES}.xlsx`).
 
 Distincion funcional requerida:
 
@@ -1899,8 +1977,8 @@ Distincion funcional requerida:
 
 SP asociados a resumenes posteriores:
 
-* La descarga inmediata de resumenes en `Inputs.aspx` no consulta SP adicional (usa Session).
-* Para conciliacion mensual posterior, `ActaConciliacion` usa `SP_A10_GET_RESUMEN_INPUTS_POR_MES`.
+- La descarga inmediata de resumenes en `Inputs.aspx` no consulta SP adicional (usa Session).
+- Para conciliacion mensual posterior, `ActaConciliacion` usa `SP_A10_GET_RESUMEN_INPUTS_POR_MES`.
 
 ## 110. Anexo B
 
@@ -1927,11 +2005,11 @@ Ficha del flujo `F2C-03`:
 
 CRUD observable:
 
-* Alta: temporal y definitivo.
-* Consulta: grillas de temporales y definitivos.
-* Edicion: no visible en UI/codigo.
-* Baja: si, por id y tipo de cierre.
-* CONCILIACION DB0-DB1 — HECHO VERIFICADO SQL: `SP_A10_DEL_CIERRE_DEF` ejecuta `UPDATE` sobre `A10_INVENTARIO_OFICINA` (reactivacion) antes del `DELETE` del cierre definitivo. El endpoint C# solo expone la baja; el efecto colateral pertenece a la logica SQL.
+- Alta: temporal y definitivo.
+- Consulta: grillas de temporales y definitivos.
+- Edicion: no visible en UI/codigo.
+- Baja: si, por id y tipo de cierre.
+- CONCILIACION DB0-DB1 — HECHO VERIFICADO SQL: `SP_A10_DEL_CIERRE_DEF` ejecuta `UPDATE` sobre `A10_INVENTARIO_OFICINA` (reactivacion) antes del `DELETE` del cierre definitivo. El endpoint C# solo expone la baja; el efecto colateral pertenece a la logica SQL.
 
 ## 111. Maestro de Oficinas
 
@@ -1958,7 +2036,7 @@ Ficha del flujo `F2C-04`:
 
 Modelo historico observable desde UI:
 
-* `Oficina (SBS)` -> `nuevo tipo` -> `vigencia por mes` (inicio/fin visibles en grilla historico).
+- `Oficina (SBS)` -> `nuevo tipo` -> `vigencia por mes` (inicio/fin visibles en grilla historico).
 
 ## 112. Redondeo de saldos
 
@@ -1988,6 +2066,7 @@ Ficha del flujo `F2C-05`:
 La pantalla contiene dos subflujos separados con guardado independiente.
 
 Aclaracion operativa:
+
 - DOCUMENTADO PERO NO VERIFICADO: esta funcionalidad registra informacion de agencias del exterior, especificamente Miami y Panama.
 - El codigo analizado verifica los subflujos de personal y saldos; la correspondencia operativa con esas sedes proviene del conocimiento del responsable del aplicativo.
 
@@ -2027,8 +2106,8 @@ Aclaracion operativa:
 
 Relacion personal vs saldos:
 
-* Se manejan en subflujos distintos, con botones `Guardar` separados y SP distintos.
-* No hay validacion cruzada visible en C# entre ambas grillas.
+- Se manejan en subflujos distintos, con botones `Guardar` separados y SP distintos.
+- No hay validacion cruzada visible en C# entre ambas grillas.
 
 ## 114. Mapa consolidado de ajustes
 
@@ -2092,10 +2171,11 @@ Ficha del flujo `F2C-07`:
 
 Distincion Lima/Provincias:
 
-* Existe efectivamente en UI (tabs) y en exportacion (hojas `Lima` y `Provincias`).
-* Los bloques por ciudad/cluster se determinan en C# por `HashSet<int>` hardcodeados.
+- Existe efectivamente en UI (tabs) y en exportacion (hojas `Lima` y `Provincias`).
+- Los bloques por ciudad/cluster se determinan en C# por `HashSet<int>` hardcodeados.
 
 Semantica funcional de `@TIPO`:
+
 - DOCUMENTADO PERO NO VERIFICADO: `@TIPO` es opcional y su valor por defecto es `NULL`.
 - `SLIMA` restringe el resultado a agencias de Lima.
 - `SPROV` restringe el resultado a agencias de Provincias.
@@ -2126,6 +2206,7 @@ Ficha del flujo `F2C-08`:
 | Incertidumbre | Significado regulatorio interno de columnas y reglas de armado en SP: `NO DETERMINADO`. |
 
 Aclaracion funcional operativa:
+
 - DOCUMENTADO PERO NO VERIFICADO: cada fila del Reporte Final representa una agencia e incluye informacion de ubicacion/ubigeo, cantidad de personal y saldos.
 - DOCUMENTADO PERO NO VERIFICADO: los saldos se presentan distribuidos en cuatro productos funcionales: `AHORRO`, `VISTA`, `COLOCACIONES` y `PLAZO`.
 - La trazabilidad fisica desde Inputs/Ajustes hacia esas columnas finales permanece pendiente para la fase de BD.
@@ -2149,23 +2230,20 @@ Aclaracion funcional operativa:
 
 ### 117.2 Generacion de Excel y ZIP
 
-* Excel:
-* Hoja `Impresion`.
-* Cabecera multi-nivel (`A1:Y3`) creada por codigo.
-* Inserta fila de totales (`AgregarFilaTotales`).
+- Excel:
+- Hoja `Impresion`.
+- Cabecera multi-nivel (`A1:Y3`) creada por codigo.
+- Inserta fila de totales (`AgregarFilaTotales`).
 
-
-* ZIP:
-* En memoria (`MemoryStream` + `ZipArchive`).
-* Entradas: `.110` + `.xlsx`.
-* Descarga HTTP: `ReporteFinal-{CODIGO_MES}.zip`.
-
-
+- ZIP:
+- En memoria (`MemoryStream` + `ZipArchive`).
+- Entradas: `.110` + `.xlsx`.
+- Descarga HTTP: `ReporteFinal-{CODIGO_MES}.zip`.
 
 ### 117.3 Seguridad de contenido
 
-* No se exponen rutas locales ni datos sensibles en nombres generados.
-* No se observan archivos temporales persistidos en disco para este flujo; el procesamiento es en memoria.
+- No se exponen rutas locales ni datos sensibles en nombres generados.
+- No se observan archivos temporales persistidos en disco para este flujo; el procesamiento es en memoria.
 
 ## 118. Precondiciones y dependencias funcionales
 
@@ -2198,9 +2276,9 @@ Aclaracion funcional operativa:
 
 No se observaron en Anexo 10:
 
-* polling,
-* jobs SQL Agent visibles,
-* procesamiento diferido explicitado en UI.
+- polling,
+- jobs SQL Agent visibles,
+- procesamiento diferido explicitado en UI.
 
 ## 119. Autorizacion y estado web
 
@@ -2208,16 +2286,16 @@ No se observaron en Anexo 10:
 
 Regla principal verificada:
 
-* Toda la superficie Anexo 10 (menu y paginas) usa `OP_Anexo10`.
+- Toda la superficie Anexo 10 (menu y paginas) usa `OP_Anexo10`.
 
 Cobertura:
 
-* `SiteAnexo10.Master.cs`: controla visibilidad de `Configuracion` y `Reportes` con `ActDirectory.FindContentPermisos(..., "OP_Anexo10")`.
-* Cada pagina de Anexo 10 valida `OP_Anexo10` en `Page_Load`; si falla -> `NoAutorizado.aspx`.
+- `SiteAnexo10.Master.cs`: controla visibilidad de `Configuracion` y `Reportes` con `ActDirectory.FindContentPermisos(..., "OP_Anexo10")`.
+- Cada pagina de Anexo 10 valida `OP_Anexo10` en `Page_Load`; si falla -> `NoAutorizado.aspx`.
 
 Excepciones encontradas:
 
-* No se observaron excepciones de permisos por accion interna en esta superficie (sin permiso adicional distinto a `OP_Anexo10`).
+- No se observaron excepciones de permisos por accion interna en esta superficie (sin permiso adicional distinto a `OP_Anexo10`).
 
 ### 119.2 Matriz de estado web
 
@@ -2268,9 +2346,9 @@ archivo usuario (browser)
 
 ### 120.3 Rutas y temporalidad
 
-* No se observaron rutas hardcodeadas especificas de Anexo 10 para almacenar archivos de entrada en disco.
-* El procesamiento visible de Inputs, Acta y Reporte Final opera en memoria/request.
-* Cualquier ruta interna de infraestructura no visible desde estos flujos se mantiene como `[REDACTED]`.
+- No se observaron rutas hardcodeadas especificas de Anexo 10 para almacenar archivos de entrada en disco.
+- El procesamiento visible de Inputs, Acta y Reporte Final opera en memoria/request.
+- Cualquier ruta interna de infraestructura no visible desde estos flujos se mantiene como `[REDACTED]`.
 
 ## 121. Contratos SP visibles
 
@@ -2348,7 +2426,7 @@ archivo usuario (browser)
 
 Nota:
 
-* Esta clasificacion es conceptual y no implica tabla fisica ni decision de dominio definitiva.
+- Esta clasificacion es conceptual y no implica tabla fisica ni decision de dominio definitiva.
 
 ## 124. Dependencias con Encaje/BSEC
 
@@ -2372,8 +2450,8 @@ Nota:
 
 Conclusion de dependencia cruzada:
 
-* Anexo 10 muestra independencia funcional a nivel BL/DA/SP visibles.
-* La coexistencia en la misma app y misma conexion logica corresponde a infraestructura compartida, no a llamada funcional directa Encaje/BSEC desde los casos de uso A10 analizados.
+- Anexo 10 muestra independencia funcional a nivel BL/DA/SP visibles.
+- La coexistencia en la misma app y misma conexion logica corresponde a infraestructura compartida, no a llamada funcional directa Encaje/BSEC desde los casos de uso A10 analizados.
 
 ## 125. Catalogo de reglas
 
@@ -2405,6 +2483,7 @@ Conclusion de dependencia cruzada:
 | A10-R-022 | Autorizacion | `OP_Anexo10` para menu y paginas A10 | autorizacion | WEB | `SiteAnexo10.Master.cs` + `Page_Load` |
 
 ### 125.2 Clasificacion READ/WRITE/IMPORT/EXPORT/PROCESS/EXTERNAL
+
 | Capacidad | READ | WRITE | IMPORT | EXPORT | PROCESS | EXTERNAL |
 | --- | --- | --- | --- | --- | --- | --- |
 | Tipo de cambio | X | X | | | | |
@@ -2419,7 +2498,9 @@ Conclusion de dependencia cruzada:
 | Reporte Final | X | | | X | X | |
 
 ## 126. Atomicidad y manejo de errores
+
 ### 126.1 Atomicidad observable
+
 | Flujo | Operaciones | Atomicidad observable | Riesgo/observacion |
 | --- | --- | --- | --- |
 | Inputs | Validaciones -> transformaciones -> `SP_A10_SET_RESUMEN_INPUTS` -> `SP_A10_SET_PERSONAL_AGENCIA` | No hay transaccion C# que abarque ambos SP | Posible persistencia parcial si falla segunda llamada |
@@ -2432,6 +2513,7 @@ Conclusion de dependencia cruzada:
 | Reporte Final | Lectura + construccion en memoria + ZIP | N/A (read/export) | Si dataset inesperado falla en runtime de formato |
 
 ### 126.2 Manejo de errores visible
+
 | Flujo | Validacion cliente | Validacion server | Catch/retorno | Mensaje UI | Logging |
 | --- | --- | --- | --- | --- | --- |
 | Inputs | mascara fecha/tipo cambio + drag&drop + extensiones | fecha, tipo cambio, 5 archivos, estructura | `ValidacionException` y `Exception` | Flash warning/error | `Util.pintaLog` en excepcion |
@@ -2443,11 +2525,14 @@ Conclusion de dependencia cruzada:
 | Reporte Final | datepicker diario | fecha valida + fin de mes | `ValidacionException` / `SqlException` / `Exception` | Flash warning/error | `Util.pintaLog` |
 
 Inconsistencias o riesgos UI/backend observables:
+
 1. En Inputs, errores de parseo de origen pueden terminar como excepcion generica si un `DataTable` intermedio queda nulo y se usa sin validacion posterior.
 2. En Sucursal Exterior, gran parte de validacion numerica ocurre en JS; controles adicionales de rango/consistencia quedan delegados a SP.
 
 ## 127. Deuda tecnica relevante para migracion
+
 Deuda tecnica observada y directamente relacionada con esfuerzo de migracion:
+
 1. Alta concentracion de logica critica en code-behind (`Inputs.aspx.cs`, `ReporteFinal.aspx.cs`, `ActaConciliacion.aspx.cs`).
 2. `DAAnexo10` monolitica con multiples casos de uso heterogeneos en una sola clase.
 3. Contrato funcional fuertemente acoplado a nombres de archivo, nombres de columna y hojas Excel.
@@ -2482,7 +2567,9 @@ Estos pendientes sustituyen a las preguntas genericas anteriores:
 | A10-BD-03 | PARCIALMENTE RESUELTA: existe grafo inicial de Inputs/Cierres/Plantilla/Acta en DB1. Falta lineage completo hasta el dataset que utiliza Reporte Final `.110`. | ALTA | Metadata inicial SQL DEV + expansion de SP/funciones en fase BD posterior. | Fase BD posterior |
 
 No permanecen preguntas funcionales ALTA abiertas en 2C que requieran seguir inspeccionando el repositorio C#.
+
 ## 129. Gates de completitud
+
 | Gate | Estado |
 | --- | --- |
 | Inputs multiarchivo caracterizados | CUMPLIDO |
@@ -2506,14 +2593,18 @@ No permanecen preguntas funcionales ALTA abiertas en 2C que requieran seguir ins
 | Incertidumbres de BD correctamente delimitadas | CUMPLIDO |
 
 Resultado de gates 2C:
+
 - No existen gates en estado `NO CUMPLIDO`.
 - Los `NO DETERMINADO` restantes corresponden a implementacion/lineage SQL y quedaron trasladados a `A10-BD-01..03`; no requieren un nuevo slice de repositorio para cerrar 2C.
 
 ## 130. Conclusion Pasada 2C
+
 Conclusion ejecutiva:
+
 - `PASADA 2C - COMPLETA`.
 
 Alcance efectivamente cubierto:
+
 1. Flujo E2E principal de Inputs (tipo de cambio, 5 archivos, validaciones, transformaciones, consolidacion y persistencia visible).
 2. Caracterizacion profunda de los cuatro mantenimientos de ajustes (`Anexo B`, `Maestro Oficinas`, `Redondeo`, `Sucursal Exterior`).
 3. Trazabilidad funcional de `ActaConciliacion` y `ReporteFinal`, incluyendo estructura observable de `.110`, Excel y ZIP.
@@ -2521,9 +2612,11 @@ Alcance efectivamente cubierto:
 5. Delimitacion explicita de pendientes tecnicos para fase BD; las preguntas funcionales Q2C-01..Q2C-05 quedaron cerradas, parcialmente resueltas o reformuladas con trazabilidad.
 
 Correcciones historicas (2A/2B):
+
 - No se detectaron contradicciones tecnicas nuevas que requieran corregir secciones previas fuera de esta incorporacion 2C.
 
 Constancias metodologicas de esta pasada:
+
 - No se realizo reverse engineering interno de Stored Procedures.
 - No se consulto la base de datos.
 - No se cambio de rama.
@@ -2531,14 +2624,19 @@ Constancias metodologicas de esta pasada:
 - No se modifico codigo aplicativo.
 
 # PASADA 2D - BALANCE SECTORIAL / BSEC PROFUNDO
+
 ## 131. Objetivo y alcance 2D
+
 Pregunta rectora:
+
 - Como funciona realmente Balance Sectorial de extremo a extremo dentro de E444, desde la carga del consolidado hasta clasificacion, reclasificacion, observaciones, resumen y archivo de salida.
 
 Subpregunta clave:
+
 - Que papel cumple `Maestro.aspx` dentro del procesamiento y que tipo de dependencia existe entre ambos.
 
 Alcance efectivo 2D:
+
 1. `Views/BSEC/Procesamiento.aspx` y `Views/BSEC/Procesamiento.aspx.cs`.
 2. `Views/BSEC/Maestro.aspx` y `Views/BSEC/Maestro.aspx.cs`.
 3. Modelos `Views/BSEC/Models/*`.
@@ -2546,6 +2644,7 @@ Alcance efectivo 2D:
 5. Transversal minimo necesario: `SiteBSEC.Master(.cs)`, `PrincipalBSEC.aspx(.cs)`, `Global.asax.cs`, `helper.cs`.
 
 Fuera de alcance (mantenido):
+
 - Reverse engineering interno de SP.
 - Analisis definitivo de boundaries.
 - Comparacion Legacy -> DNET.
@@ -2553,10 +2652,13 @@ Fuera de alcance (mantenido):
 - Fase BD interna.
 
 Baseline operativo de esta pasada:
+
 - `HEAD` + working tree actual aceptado como AS-IS (incluyendo cambios locales BSEC, tracked y untracked).
 
 ## 132. Macroflujo funcional BSEC
+
 Casos de uso funcionales observados:
+
 - `F2D-01`: Cargar y procesar consolidado BSEC.
 - `F2D-02`: Descargar Excel resultado de procesamiento.
 - `F2D-03`: Consultar/filtrar Maestro BSEC.
@@ -2565,28 +2667,29 @@ Casos de uso funcionales observados:
 - `F2D-06`: Activar/Desactivar registro de Maestro BSEC.
 
 Diagrama E2E real (BSEC):
+
 ```mermaid
 flowchart TD
-    U["Usuario carga consolidado<br/>(VERIFICADO)"] --> V1["Validar archivo, hojas, columnas y moneda<br/>(VERIFICADO)"]
-    V1 --> T1["Transformar filas Excel a RegistroBalanceSectorial<br/>(VERIFICADO)"]
-    T1 --> M1["Leer maestro via LBSEC/DABSEC/SP_MAESTRO_CLASIFICACION_SELECT<br/>(VERIFICADO)"]
-    M1 --> C1["Clasificar por clave CodigoInterno+TipoProducto<br/>(VERIFICADO)"]
-    C1 --> R1["Reclasificar negativos AHO/CTE/DEP a COL<br/>(VERIFICADO)"]
-    R1 --> S1["Generar resumen por Codigo BCR y TipoProducto<br/>(VERIFICADO)"]
-    S1 --> O1["Mostrar observaciones y resumen en UI<br/>(VERIFICADO)"]
-    O1 --> X1["Generar Excel SEC_MN/SEC_ME en memoria<br/>(VERIFICADO)"]
-    X1 --> SS1["Guardar bytes en Session y habilitar descarga<br/>(VERIFICADO)"]
-    SS1 --> D1["Descargar archivo resultado<br/>(VERIFICADO)"]
+U["Usuario carga consolidado<br/>(VERIFICADO)"] --> V1["Validar archivo, hojas, columnas y moneda<br/>(VERIFICADO)"]
+V1 --> T1["Transformar filas Excel a RegistroBalanceSectorial<br/>(VERIFICADO)"]
+T1 --> M1["Leer maestro via LBSEC/DABSEC/SP_MAESTRO_CLASIFICACION_SELECT<br/>(VERIFICADO)"]
+M1 --> C1["Clasificar por clave CodigoInterno+TipoProducto<br/>(VERIFICADO)"]
+C1 --> R1["Reclasificar negativos AHO/CTE/DEP a COL<br/>(VERIFICADO)"]
+R1 --> S1["Generar resumen por Codigo BCR y TipoProducto<br/>(VERIFICADO)"]
+S1 --> O1["Mostrar observaciones y resumen en UI<br/>(VERIFICADO)"]
+O1 --> X1["Generar Excel SEC_MN/SEC_ME en memoria<br/>(VERIFICADO)"]
+X1 --> SS1["Guardar bytes en Session y habilitar descarga<br/>(VERIFICADO)"]
+SS1 --> D1["Descargar archivo resultado<br/>(VERIFICADO)"]
 
-    MA["Maestro.aspx alta/edicion/estado<br/>(VERIFICADO)"] --> M1
-    DBX[["Reglas SQL internas de maestro y filtro por estado<br/>(DELEGADO A BD)"]] -. condiciona dataset .-> M1
+MA["Maestro.aspx alta/edicion/estado<br/>(VERIFICADO)"] --> M1
+DBX[["Reglas SQL internas de maestro y filtro por estado<br/>(DELEGADO A BD)"]] -. condiciona dataset .-> M1
 
 ```
 
 Lectura macro:
 
-* El procesamiento BSEC es principalmente `IMPORT + PROCESS + EXPORT` en C#.
-* La persistencia de negocio observada en BSEC esta en `Maestro.aspx` (no en `Procesamiento.aspx`).
+- El procesamiento BSEC es principalmente `IMPORT + PROCESS + EXPORT` en C#.
+- La persistencia de negocio observada en BSEC esta en `Maestro.aspx` (no en `Procesamiento.aspx`).
 
 ## 133. Archivo consolidado de entrada
 
@@ -2617,7 +2720,7 @@ Compatibilidad visible en codigo:
 
 Nota:
 
-* Aunque la extension permitida en UI/servidor es `.xls/.xlsx`, el detector interno acepta XML SpreadsheetML si su contenido cumple firma y estructura.
+- Aunque la extension permitida en UI/servidor es `.xls/.xlsx`, el detector interno acepta XML SpreadsheetML si su contenido cumple firma y estructura.
 
 ## 134. Validaciones del consolidado
 
@@ -2667,11 +2770,11 @@ Nota:
 | --- | --- |
 | ID | `F2D-01` |
 | Nombre | Cargar y procesar consolidado BSEC |
-| Proposito | Leer consolidado, clasificar registros, aplicar reclasificacion funcional, mostrar resumen/observaciones y generar Excel descargable. |
+| Proposito | Leer consolidado, clasificar registros, aplicar reclasificacion funcional, mostrar resumen/observaciones y generar Excel descargable.|
 | Actor/permisos | Navegacion condicionada por `OP_BSEC` en `SiteBSEC.Master`; pagina sin chequeo `OP_*` propio en `Page_Load`. |
 | Pantalla | `Views/BSEC/Procesamiento.aspx` |
 | Precondiciones | Archivo valido (`.xls/.xlsx`, <=50MB), hojas y columnas obligatorias, moneda consistente por hoja. |
-| Inputs | `fuConsolidado` (un archivo). |
+| Inputs | `fuConsolidado` (un archivo).|
 | Validaciones | Tecnicas/funcionales de archivo, estructura, moneda, monto, clasificacion y regla de reclasificacion. |
 | Pasos | 1) Limpia Session de archivo previo. 2) Valida archivo. 3) Abre workbook. 4) Lee hojas obligatorias. 5) Mapea columnas. 6) Valida moneda por hoja. 7) Convierte filas a modelos MN/ME. 8) Lee maestro clasificacion. 9) Clasifica cada registro. 10) Aplica regla de reclasificacion a colocaciones. 11) Genera resumen por CODIGO_BCR. 12) Muestra resultados y observaciones. 13) Genera Excel en memoria y lo guarda en Session. |
 | BL | `LBSEC.GetMaestroClasificacion()` |
@@ -2694,16 +2797,16 @@ Nota:
 
 Hallazgo clave:
 
-* En `Procesamiento.aspx.cs` no se observa escritura a BD (`INSERT/UPDATE/DELETE/PROCESS`) del resultado procesado.
+- En `Procesamiento.aspx.cs` no se observa escritura a BD (`INSERT/UPDATE/DELETE/PROCESS`) del resultado procesado.
 
 ### 136.3 Reproceso / segunda carga
 
 Estado AS-IS:
 
-* Se puede volver a procesar inmediatamente cargando otro archivo.
-* En cada nuevo `btnProcesar_Click` se limpian las Session del archivo anterior y se reemplaza el resultado en memoria.
-* No hay confirmacion de reproceso ni versionado en C#.
-* No hay borrado previo en BD visible porque el flujo no escribe en BD.
+- Se puede volver a procesar inmediatamente cargando otro archivo.
+- En cada nuevo `btnProcesar_Click` se limpian las Session del archivo anterior y se reemplaza el resultado en memoria.
+- No hay confirmacion de reproceso ni versionado en C#.
+- No hay borrado previo en BD visible porque el flujo no escribe en BD.
 
 ## 137. Clasificacion
 
@@ -2711,25 +2814,25 @@ Estado AS-IS:
 
 Entidad clasificada:
 
-* Cada `RegistroBalanceSectorial`.
+- Cada `RegistroBalanceSectorial`.
 
 Clave de clasificacion:
 
-* `CODINTERNOCOMPUTACIONAL` + `TIPPRODUCTO` (normalizados con `Trim().ToUpperInvariant()`).
+- `CODINTERNOCOMPUTACIONAL` + `TIPPRODUCTO` (normalizados con `Trim().ToUpperInvariant()`).
 
 Datos devueltos por clasificacion:
 
-* `CODIGO_BSEC`
-* `DESCRIPCION_BSEC`
-* `CODIGO_BCR`
+- `CODIGO_BSEC`
+- `DESCRIPCION_BSEC`
+- `CODIGO_BCR`
 
 Estados de clasificacion observables:
 
-* `CLASIFICADO`
-* `SIN_CLASIFICACION`
-* `CODIGO_BCR_VACIO`
-* `DUPLICADO_EQUIVALENTE`
-* `CLASIFICACION_AMBIGUA`
+- `CLASIFICADO`
+- `SIN_CLASIFICACION`
+- `CODIGO_BCR_VACIO`
+- `DUPLICADO_EQUIVALENTE`
+- `CLASIFICACION_AMBIGUA`
 
 ### 137.2 Trazabilidad WEB -> BL -> DA -> SP
 
@@ -2742,16 +2845,16 @@ Cadena observable:
 
 Clasificacion del mecanismo:
 
-* HECHO VERIFICADO: la decision de estado (`CLASIFICADO`, `SIN_CLASIFICACION`, etc.) se toma en C#.
-* CONCILIADO DB0-DB1 — HECHO VERIFICADO SQL: `BSEC.SP_MAESTRO_CLASIFICACION_SELECT` consulta `BSEC.MAESTRO_CLASIFICACION_SECTORIAL` con filtro `WHERE ESTADO = 1`; el procesamiento C# solo recibe clasificaciones activas de ese SELECT. Otras reglas SQL de vigencia/calidad de datos siguen pendientes cuando exceden esa evidencia.
+- HECHO VERIFICADO: la decision de estado (`CLASIFICADO`, `SIN_CLASIFICACION`, etc.) se toma en C#.
+- CONCILIADO DB0-DB1 — HECHO VERIFICADO SQL: `BSEC.SP_MAESTRO_CLASIFICACION_SELECT` consulta `BSEC.MAESTRO_CLASIFICACION_SECTORIAL` con filtro `WHERE ESTADO = 1`; el procesamiento C# solo recibe clasificaciones activas de ese SELECT. Otras reglas SQL de vigencia/calidad de datos siguen pendientes cuando exceden esa evidencia.
 
 ## 138. Registros no clasificados / excepciones
 
 Conceptos explicitos observados:
 
-* `SIN_CLASIFICACION`.
-* `CODIGO_BCR_VACIO`.
-* `CLASIFICACION_AMBIGUA`.
+- `SIN_CLASIFICACION`.
+- `CODIGO_BCR_VACIO`.
+- `CLASIFICACION_AMBIGUA`.
 
 Comportamiento:
 
@@ -2768,16 +2871,15 @@ Comportamiento:
 
 Mecanismo observado:
 
-* Reclasificacion automatica en C# por regla fija.
+- Reclasificacion automatica en C# por regla fija.
 
 Regla:
 
-* Si `TIPPRODUCTO` es `AHO`, `CTE` o `DEP` y `MTOSALDOCTA < 0`, entonces:
+- Si `TIPPRODUCTO` es `AHO`, `CTE` o `DEP` y `MTOSALDOCTA < 0`, entonces:
+
 1. `TipoProducto` pasa a `COL`.
 2. `MontoSaldoCuenta` pasa a valor absoluto.
 3. `ReclasificadoComoColocacion = true`.
-
-
 
 Caracterizacion:
 
@@ -2794,7 +2896,7 @@ Caracterizacion:
 
 Funcion observable:
 
-* Registrar incidencias de calidad/clasificacion durante el procesamiento y mostrarlas en UI.
+- Registrar incidencias de calidad/clasificacion durante el procesamiento y mostrarlas en UI.
 
 Caracterizacion:
 
@@ -2815,20 +2917,20 @@ Caracterizacion:
 Salida en pantalla despues de procesar:
 
 1. Resumen superior:
-* `Registros MN`
-* `Registros ME`
-* `Observaciones`
 
+- `Registros MN`
+- `Registros ME`
+- `Observaciones`
 
 2. Dos grillas de resultado (`gvResultadoMN`, `gvResultadoME`) por moneda.
 3. Una grilla de observaciones (`gvObservaciones`).
 
 Nivel de agregacion del resumen por grilla MN/ME:
 
-* Agrupa por `CODIGO_BCR`.
-* Columna por `TIPO_PRODUCTO` (base: `AHO`, `COL`, `CTE`, `DEP` + tipos adicionales detectados).
-* Columna `TOTAL_GENERAL`.
-* Fila final `Total general`.
+- Agrupa por `CODIGO_BCR`.
+- Columna por `TIPO_PRODUCTO` (base: `AHO`, `COL`, `CTE`, `DEP` + tipos adicionales detectados).
+- Columna `TOTAL_GENERAL`.
+- Fila final `Total general`.
 
 Donde se calcula:
 
@@ -2842,7 +2944,7 @@ Donde se calcula:
 
 Nota de trazabilidad:
 
-* Variables calculadas `clasificados`, `sinClasificacion`, `codigoBcrVacio`, `ambiguos`, `montoPendienteMN/ME` no se exponen en UI ni se exportan en una hoja separada.
+- Variables calculadas `clasificados`, `sinClasificacion`, `codigoBcrVacio`, `ambiguos`, `montoPendienteMN/ME` no se exponen en UI ni se exportan en una hoja separada.
 
 ## 142. Archivo de salida
 
@@ -3022,17 +3124,17 @@ Respuesta estructurada requerida:
 
 Hechos verificados:
 
-* `SiteBSEC.Master` controla visibilidad de menu/opciones con `OP_BSEC`.
-* `Views/BSEC/Procesamiento.aspx.cs`, `Views/BSEC/Maestro.aspx.cs` y `PrincipalBSEC.aspx.cs` no validan `OP_BSEC` en `Page_Load`.
-* `Global.Application_AcquireRequestState` valida existencia de `Session["Permisos"]`, pero no valida `OP_BSEC` por URL.
+- `SiteBSEC.Master` controla visibilidad de menu/opciones con `OP_BSEC`.
+- `Views/BSEC/Procesamiento.aspx.cs`, `Views/BSEC/Maestro.aspx.cs` y `PrincipalBSEC.aspx.cs` no validan `OP_BSEC` en `Page_Load`.
+- `Global.Application_AcquireRequestState` valida existencia de `Session["Permisos"]`, pero no valida `OP_BSEC` por URL.
 
 Impacto de acceso directo (sin remediacion):
 
-* INFERENCIA TECNICA sustentada: con sesion valida y `Session["Permisos"]` no nula, el acceso directo por URL a paginas BSEC no muestra bloqueo page-level especifico `OP_BSEC` en C#.
+- INFERENCIA TECNICA sustentada: con sesion valida y `Session["Permisos"]` no nula, el acceso directo por URL a paginas BSEC no muestra bloqueo page-level especifico `OP_BSEC` en C#.
 
 WebMethods:
 
-* No se observaron `[WebMethod]` en `Views/BSEC/*`.
+- No se observaron `[WebMethod]` en `Views/BSEC/*`.
 
 ### 146.2 Matriz de estado Web BSEC
 
@@ -3063,10 +3165,10 @@ WebMethods:
 
 No se observaron en BSEC:
 
-* POLLING,
-* DIFERIDO,
-* JOB,
-* AJAX.
+- POLLING,
+- DIFERIDO,
+- JOB,
+- AJAX.
 
 ### 147.2 Operaciones funcionales
 
@@ -3098,9 +3200,9 @@ No se observaron en BSEC:
 
 Concentracion de schema observada:
 
-* Todos los contratos SP visibles en `DABSEC` usan schema/prefijo `BSEC.SP_*`.
-* No se observaron contratos `BSEC.SP_*` fuera de `DABSEC` en el repositorio revisado.
-* Dependencias internas de esos SP a objetos `dbo` u otros schemas: NO DETERMINADO - requiere fase BD.
+- Todos los contratos SP visibles en `DABSEC` usan schema/prefijo `BSEC.SP_*`.
+- No se observaron contratos `BSEC.SP_*` fuera de `DABSEC` en el repositorio revisado.
+- Dependencias internas de esos SP a objetos `dbo` u otros schemas: NO DETERMINADO - requiere fase BD.
 
 ## 149. Entidades conceptuales
 
@@ -3221,7 +3323,7 @@ Las preguntas cuya respuesta depende de SQL se consolidan en un unico backlog pa
 
 | ID | Pregunta para fase BD | Prioridad | Evidencia actual | Fuente necesaria |
 | --- | --- | --- | --- | --- |
-| BSEC-BD-01 | PARCIALMENTE RESUELTA: DB1 verifico lectura de `BSEC.MAESTRO_CLASIFICACION_SECTORIAL` con `ESTADO = 1`; resto de criterios de vigencia y origen historico por verificar. | ALTA | HECHO VERIFICADO SQL DEV DB0-DB1 | Expansion SQL dirigida, si aplica |
+| BSEC-BD-01 | PARCIALMENTE RESUELTA: DB1 verifico lectura de `BSEC.SP_MAESTRO_CLASIFICACION_SELECT` con `ESTADO = 1`; resto de criterios de vigencia y origen historico por verificar. | ALTA | HECHO VERIFICADO SQL DEV DB0-DB1 | Expansion SQL dirigida, si aplica |
 | BSEC-BD-02 | PARCIALMENTE RESUELTA: `EXISTE_ACTIVO` usa `EXISTS`, sin lock hints ni transaccion explicita; falta comprobar constraints/indices y proteccion efectiva de concurrencia. | ALTA | HECHO VERIFICADO SQL DEV DB0-DB1 | Constraints/indices y analisis especifico, sin ejecutarse pruebas destructivas |
 | BSEC-BD-03 | PARCIALMENTE RESUELTA: en las siete semillas BSEC de DB1 no se observaron cruces funcionales directos hacia Encaje/A10; se requiere expansion antes de concluir independencia. | ALTA | Grafo SQL de semillas DB0-DB1 | Expansion SQL posterior |
 | BSEC-BD-04 | PARCIALMENTE RESUELTA: SQL DB1 observo campos de auditoria/modificacion/inactivacion en operaciones del Maestro; falta semantica historica integral. | MEDIA | Definiciones de semillas DB0-DB1 | Profundizacion en tabla y reglas SQL |
@@ -3234,6 +3336,7 @@ Aclaracion operativa para `BSEC-BD-06`:
 - DOCUMENTADO PERO NO VERIFICADO: actualmente no existe proceso que persista o audite el resultado BSEC; el usuario descarga el Excel y el procesamiento termina.
 - Existe una necesidad futura reportada de conservar historico para descargar procesamientos de periodos anteriores sin reprocesar.
 - Esa necesidad se registra para trazabilidad futura y NO constituye aun una decision de arquitectura TO-BE.
+
 ## 156. Estado de preguntas QSEC y gaps conocidos
 
 Las preguntas generadas al cierre de 2D fueron revisadas con conocimiento operativo del responsable del aplicativo.
@@ -3252,7 +3355,9 @@ Las preguntas generadas al cierre de 2D fueron revisadas con conocimiento operat
 - **NECESIDAD FUTURA REPORTADA — NO ES DECISION TO-BE:** se desea que en el futuro exista historial de procesamientos y que un usuario pueda descargar resultados de periodos anteriores sin reprocesarlos.
 
 No permanecen preguntas ALTA de 2D que puedan resolverse mediante lectura adicional del repositorio C#.
+
 ## 157. Gates de completitud
+
 | Gate | Estado |
 | --- | --- |
 | Archivo de entrada caracterizado | CUMPLIDO |
@@ -3278,14 +3383,18 @@ No permanecen preguntas ALTA de 2D que puedan resolverse mediante lectura adicio
 | Incertidumbres SQL correctamente delimitadas | CUMPLIDO |
 
 Resultado de gates 2D:
+
 - No existen gates en estado `NO CUMPLIDO`.
 - Las preguntas SQL fueron consolidadas en `BSEC-BD-01..07`; QSEC-Q-01 y QSEC-Q-04 quedaron cerradas para caracterizacion AS-IS y no requieren un nuevo slice 2D.
 
 ## 158. Conclusion PASADA 2D
+
 Conclusion ejecutiva:
+
 - `PASADA 2D - COMPLETA`.
 
 Sintesis de hallazgos centrales:
+
 1. El procesamiento BSEC actual es un flujo web sin persistencia de resultado en BD visible desde C#; clasifica y reclasifica en memoria, muestra observaciones y genera Excel descargable.
 2. La clasificacion depende directamente del dataset de maestro (`BSEC.SP_MAESTRO_CLASIFICACION_SELECT`) pero la decision de estados de clasificacion se ejecuta en C#.
 3. El Maestro BSEC concentra la persistencia real de esta superficie (listar, obtener, insertar, actualizar, cambiar estado, validar duplicidad).
@@ -3293,9 +3402,11 @@ Sintesis de hallazgos centrales:
 5. Las fronteras SQL no determinables quedaron consolidadas para fase BD; los gaps de autorizacion y ausencia de historial quedaron separados del AS-IS como deuda/necesidad futura, sin convertirlos en decisiones TO-BE.
 
 Correcciones sobre secciones previas:
+
 - No se detectaron contradicciones tecnicas que obliguen correccion in-place de 2A/2B/2C; 2D profundiza y precisa el detalle de BSEC sin invalidar los hallazgos previos.
 
 Constancias metodologicas de esta pasada:
+
 - No se realizo reverse engineering interno de Stored Procedures.
 - No se consulto la base de datos.
 - No se cambio de rama.
@@ -3306,28 +3417,37 @@ Constancias metodologicas de esta pasada:
 - No se tomaron decisiones de boundaries.
 
 # PASADA 2E - TRANSVERSALES, INTEGRACIONES, OPERACION E INFRAESTRUCTURA
+
 ## 159. Objetivo y alcance 2E
+
 Pregunta rectora:
+
 - Que mecanismos transversales, dependencias externas y condiciones operativas permiten que E444 funcione hoy como una unica aplicacion legacy.
 
 Baseline de esta pasada:
+
 - `HEAD` + working tree actual aceptado sobre `feature/NIIFRRCC-18028-migracion-e079`.
 
 Evolucion paralela conocida (fuera de inspeccion en esta pasada):
+
 - `feature/NIIFRRCC-18032-actualizacion-contingencia`.
 
 Regla de evidencia aplicada en toda 2E:
+
 - HECHO VERIFICADO: evidencia directa en codigo/configuracion/repositorio.
 - DOCUMENTADO PERO NO VERIFICADO: informacion operativa no demostrada completamente en repo.
 - INFERENCIA TECNICA: conclusion razonable derivada de evidencia.
 - NO DETERMINADO: no hay evidencia suficiente.
 
 Delimitacion metodologica:
+
 - No se reabre el detalle funcional E2E de Encaje/A10/BSEC ya cubierto en 2A/2B/2C/2D.
 - Se documentan componentes compartidos: auth, session, config, integraciones, logging, jobs/ETL, deployment e infraestructura visible.
 
 ## 160. Lifecycle global ASP.NET
+
 ### 160.1 Eventos globales observados
+
 | Evento | Comportamiento AS IS | Clasificacion |
 | --- | --- | --- |
 | `Application_Start` | Metodo presente sin logica funcional observable. | HECHO VERIFICADO |
@@ -3337,6 +3457,7 @@ Delimitacion metodologica:
 | `Session_End` | Metodo presente sin logica funcional observable. | HECHO VERIFICADO |
 
 ### 160.2 Flujo global request -> auth -> session -> pagina
+
 ```mermaid
 flowchart TD
     R["HTTP Request"] --> A["Windows Authentication (IIS/ASP.NET) (VERIFICADO)"]
@@ -3426,37 +3547,32 @@ flowchart LR
 
 ### 163.1 BSEC
 
-* HECHO VERIFICADO:
-* `OP_BSEC` controla visibilidad de menu en `SiteBSEC.Master`.
-* `Views/BSEC/Procesamiento.aspx.cs` y `Views/BSEC/Maestro.aspx.cs` no realizan chequeo page-level de `OP_BSEC` en `Page_Load`.
+- HECHO VERIFICADO:
+- `OP_BSEC` controla visibilidad de menu en `SiteBSEC.Master`.
+- `Views/BSEC/Procesamiento.aspx.cs` y `Views/BSEC/Maestro.aspx.cs` no realizan chequeo page-level de `OP_BSEC` en `Page_Load`.
 
+- DOCUMENTADO PERO NO VERIFICADO:
+- El comportamiento esperado reportado es restringir acceso directo URL a usuarios con `OP_BSEC`.
 
-* DOCUMENTADO PERO NO VERIFICADO:
-* El comportamiento esperado reportado es restringir acceso directo URL a usuarios con `OP_BSEC`.
-
-
-* Estado: `GAP DE AUTORIZACION CONOCIDO / PENDIENTE`.
+- Estado: `GAP DE AUTORIZACION CONOCIDO / PENDIENTE`.
 
 ### 163.2 Selector de aplicaciones
 
-* HECHO VERIFICADO:
-* `Application_AcquireRequestState` mantiene una condicion especial sobre `SeleccionAplicacion.aspx` basada en `OP_Anexo10`.
+- HECHO VERIFICADO:
+- `Application_AcquireRequestState` mantiene una condicion especial sobre `SeleccionAplicacion.aspx` basada en `OP_Anexo10`.
 
+- DOCUMENTADO PERO NO VERIFICADO:
+- Regla deseada: ingreso directo si tiene una sola superficie y selector si tiene 2 o mas (Encaje/A10/BSEC).
 
-* DOCUMENTADO PERO NO VERIFICADO:
-* Regla deseada: ingreso directo si tiene una sola superficie y selector si tiene 2 o mas (Encaje/A10/BSEC).
-
-
-* Estado: `GAP FUNCIONAL CONOCIDO / PENDIENTE`.
+- Estado: `GAP FUNCIONAL CONOCIDO / PENDIENTE`.
 
 ### 163.3 TOSE
 
-* HECHO VERIFICADO:
-* `ReporteValidacion.aspx` y `ReporteValidacionDetalle.aspx` validan `OP_Reporte6`.
-* `Site.Master` usa `OP_Reporte7` y `OP_Reporte8` para visibilidad de los menus TOSE.
+- HECHO VERIFICADO:
+- `ReporteValidacion.aspx` y `ReporteValidacionDetalle.aspx` validan `OP_Reporte6`.
+- `Site.Master` usa `OP_Reporte7` y `OP_Reporte8` para visibilidad de los menus TOSE.
 
-
-* Estado: `DEFECTO DE AUTORIZACION CONOCIDO / PENDIENTE`.
+- Estado: `DEFECTO DE AUTORIZACION CONOCIDO / PENDIENTE`.
 
 ## 164. AzMan / WCF residual
 
@@ -3479,8 +3595,8 @@ flowchart LR
 
 Conclusion 164:
 
-* `AzMan/WCF` se clasifica como `DEUDA LEGACY / ARTEFACTO RESIDUAL`.
-* No hay evidencia suficiente de flujo runtime activo actual basado en AzMan desde el camino principal de autenticacion/autorizacion.
+- `AzMan/WCF` se clasifica como `DEUDA LEGACY / ARTEFACTO RESIDUAL`.
+- No hay evidencia suficiente de flujo runtime activo actual basado en AzMan desde el camino principal de autenticacion/autorizacion.
 
 ## 165. Session State y estado transversal
 
@@ -3494,7 +3610,7 @@ Conclusion 164:
 
 INFERENCIA TECNICA operativa:
 
-* `InProc` implica dependencia de memoria del worker process; perdida de estado ante recycle/restart.
+- `InProc` implica dependencia de memoria del worker process; perdida de estado ante recycle/restart.
 
 ### 165.2 Variables Session nucleares (arranque global)
 
@@ -3526,11 +3642,11 @@ INFERENCIA TECNICA operativa:
 
 Fuente vigente para esta caracterizacion:
 
-* `Web.config`.
+- `Web.config`.
 
 Estado de `Web_CERT.config` y `Web_PROD.config`:
 
-* DOCUMENTADO PERO NO VERIFICADO como historicos/deprecados para runtime actual.
+- DOCUMENTADO PERO NO VERIFICADO como historicos/deprecados para runtime actual.
 
 ### 166.1 Configuracion transversal consolidada
 
@@ -3568,9 +3684,9 @@ Rutas UNC y hosts internos se redactan como `[REDACTED]` en este documento.
 
 Conclusion 167:
 
-* Dependencia de columnas cifradas queda delimitada al uso focal de `cnn_EncajeAE` visible en cargas de inputs especificas.
-* No se investigo criptografia SQL ni definicion interna de columnas.
-* La referencia `ConnectionStrings["BD"]` se mantiene como codigo residual conocido, segun aclaracion operativa previa; no constituye una pregunta runtime activa mientras no aparezca nueva evidencia.
+- Dependencia de columnas cifradas queda delimitada al uso focal de `cnn_EncajeAE` visible en cargas de inputs especificas.
+- No se investigo criptografia SQL ni definicion interna de columnas.
+- La referencia `ConnectionStrings["BD"]` se mantiene como codigo residual conocido, segun aclaracion operativa previa; no constituye una pregunta runtime activa mientras no aparezca nueva evidencia.
 
 ## 168. Infraestructura de archivos
 
@@ -3597,8 +3713,8 @@ Conclusion 167:
 
 Disponibilidad/autenticacion:
 
-* HECHO VERIFICADO: usa via IO de .NET (`File.Copy`, `File.ReadAllBytes`, `Path.Combine`).
-* NO DETERMINADO: permisos exactos en share, identidad de proceso IIS y SLA de disponibilidad.
+- HECHO VERIFICADO: usa via IO de .NET (`File.Copy`, `File.ReadAllBytes`, `Path.Combine`).
+- NO DETERMINADO: permisos exactos en share, identidad de proceso IIS y SLA de disponibilidad.
 
 ## 169. Librerias Excel/documentos
 
@@ -3611,8 +3727,8 @@ Disponibilidad/autenticacion:
 
 Solapamiento tecnologico observable:
 
-* HECHO VERIFICADO: coexisten EPPlus y NPOI para manejo de Excel en distintos flujos.
-* HECHO VERIFICADO: conviven dependencias NuGet y DLL local para componentes documentales.
+- HECHO VERIFICADO: coexisten EPPlus y NPOI para manejo de Excel en distintos flujos.
+- HECHO VERIFICADO: conviven dependencias NuGet y DLL local para componentes documentales.
 
 ## 170. Logging
 
@@ -3626,10 +3742,10 @@ Solapamiento tecnologico observable:
 
 Semantica por nivel:
 
-* `1`: auditoria (BD).
-* `2`: seguridad/acceso (BD).
-* `3`: error tecnico (log4net).
-* `4`: update de auditoria (BD).
+- `1`: auditoria (BD).
+- `2`: seguridad/acceso (BD).
+- `3`: error tecnico (log4net).
+- `4`: update de auditoria (BD).
 
 ### 170.2 Cobertura de logging por area
 
@@ -3643,9 +3759,9 @@ Semantica por nivel:
 
 ### 170.3 Hallazgos transversales
 
-* HECHO VERIFICADO: existe logging funcional amplio, pero no uniforme al 100% en todos los catches.
-* HECHO VERIFICADO: coexisten logging BD y archivo.
-* INFERENCIA TECNICA: la observabilidad end-to-end de procesos externos depende de fuentes fuera de la app (SQL Agent/SSIS/IIS/log central).
+- HECHO VERIFICADO: existe logging funcional amplio, pero no uniforme al 100% en todos los catches.
+- HECHO VERIFICADO: coexisten logging BD y archivo.
+- INFERENCIA TECNICA: la observabilidad end-to-end de procesos externos depende de fuentes fuera de la app (SQL Agent/SSIS/IIS/log central).
 
 ## 171. Manejo global de errores
 
@@ -3722,20 +3838,18 @@ flowchart TD
 
 ### 175.1 AS-IS baseline actual
 
-* Cargas de inputs y calculo Encaje dependen de contratos SP visibles desde C# y, en partes, de procesos externos no observables internamente.
-* Se observan triggers SQL Agent visibles para broad reportes y control de procesos.
+- Cargas de inputs y calculo Encaje dependen de contratos SP visibles desde C# y, en partes, de procesos externos no observables internamente.
+- Se observan triggers SQL Agent visibles para broad reportes y control de procesos.
 
 ### 175.2 Evolucion paralela conocida (sin inspeccion)
 
-* DOCUMENTADO PERO NO VERIFICADO - EVOLUCION PARALELA:
-* desacople de parte del ETL de carga de inputs;
-* permanencia de ETL para calculo de Encaje.
-
-
+- DOCUMENTADO PERO NO VERIFICADO - EVOLUCION PARALELA:
+- desacople de parte del ETL de carga de inputs;
+- permanencia de ETL para calculo de Encaje.
 
 Regla aplicada:
 
-* No se mezclaron hallazgos de la rama paralela con el AS-IS del baseline actual.
+- No se mezclaron hallazgos de la rama paralela con el AS-IS del baseline actual.
 
 ## 176. Deployment y publicacion
 
@@ -3756,8 +3870,8 @@ Regla aplicada:
 
 Clasificacion:
 
-* HECHO VERIFICADO en estructura de proyecto.
-* INFERENCIA TECNICA: tooling operativo esperado en Visual Studio/MSBuild clasico.
+- HECHO VERIFICADO en estructura de proyecto.
+- INFERENCIA TECNICA: tooling operativo esperado en Visual Studio/MSBuild clasico.
 
 ## 178. IIS e infraestructura visible
 
@@ -3787,6 +3901,7 @@ Modelo operativo vigente documentado:
 | Publicacion | Publish FileSystem + copia manual reportada | Publish FileSystem + copia manual reportada | Publish FileSystem + copia manual reportada | HECHO VERIFICADO para perfil FileSystem + DOCUMENTADO PERO NO VERIFICADO para operacion runtime |
 
 No se reproducen hosts, credenciales, connection strings completas ni rutas internas.
+
 ## 180. Operabilidad
 
 | Proceso | Deteccion fallo | Reintento | Cancelacion | Observabilidad |
@@ -3807,9 +3922,9 @@ No se reproducen hosts, credenciales, connection strings completas ni rutas inte
 
 Dependencias con impacto de migracion/build:
 
-* coexistencia NuGet + DLL local;
-* dependencia de targets de WebApplication;
-* arrastre de artefactos WCF/AzMan legacy.
+- coexistencia NuGet + DLL local;
+- dependencia de targets de WebApplication;
+- arrastre de artefactos WCF/AzMan legacy.
 
 ## 182. Artefactos legacy/residuales
 
@@ -3887,8 +4002,8 @@ flowchart TD
 
 Nota metodologica obligatoria:
 
-* Compartir Web app, auth, Session, helper, connection strings o base fisica NO demuestra por si solo que Encaje, A10 y BSEC deban pertenecer al mismo boundary futuro.
-* La ausencia de llamadas BL/DA cruzadas tampoco demuestra por si sola que deban desplegarse separados.
+- Compartir Web app, auth, Session, helper, connection strings o base fisica NO demuestra por si solo que Encaje, A10 y BSEC deban pertenecer al mismo boundary futuro.
+- La ausencia de llamadas BL/DA cruzadas tampoco demuestra por si sola que deban desplegarse separados.
 
 ## 185. Deuda tecnica transversal
 
@@ -3906,6 +4021,7 @@ Nota metodologica obligatoria:
 | Testing | Sin proyectos unitarios/integracion visibles en repo. | Todo E444 | Alta dependencia de prueba manual |
 
 ## 186. Backlog externo SQL Agent / ETL
+
 | ID | Pregunta | Sistema externo |
 | --- | --- | --- |
 | E444-EXT-001 | Confirmar tecnicamente el encadenamiento `EB_CALCULAR_ENCAJE` -> `JOB_E444_SSIS_CalculaEncaje_Monitor` -> paquete SSIS y su contrato de parametros/estado. | SQL Agent / SSIS |
@@ -3916,6 +4032,7 @@ Nota metodologica obligatoria:
 | E444-EXT-006 | Que alertas/telemetria externa existen para fallos de jobs disparados por E444? | SQL Agent / Monitoreo |
 
 ## 187. Backlog infraestructura / IIS
+
 | ID | Pregunta | Sistema externo |
 | --- | --- | --- |
 | E444-INFRA-001 | Cual es el App Pool real (nombre, identity, pipeline mode) del sitio productivo? | IIS |
@@ -3947,12 +4064,15 @@ La referencia `ConnectionStrings["BD"]` NO se mantiene como pregunta abierta: fu
 Las preguntas activas de esta seccion son externas al repositorio y no requieren continuar leyendo C# para cerrar 2E.
 
 Resultado del saneamiento documental:
+
 - Baseline corregido a `feature/NIIFRRCC-18028-migracion-e079`.
 - `ConnectionStrings["BD"]` permanece residual y Q2E-001 queda cerrada.
 - Modelo de configuracion por ambiente reconciliado: `Web.config` es la fuente efectiva en DEV/CERT/PROD; transforms historicos estan deprecados.
 - Nombre operativo del job de calculo preservado como `JOB_E444_SSIS_CalculaEncaje_Monitor` y separado de la evidencia C#.
 - Estado futuro conocido de `PFX` y configs deprecadas registrado como DOCUMENTADO PERO NO VERIFICADO.
+
 ## 189. Gates de completitud
+
 | Gate | Estado |
 | --- | --- |
 | Lifecycle global entendido | CUMPLIDO |
@@ -3981,18 +4101,23 @@ Resultado del saneamiento documental:
 | Preguntas externas delimitadas | CUMPLIDO |
 
 Resultado gates 2E:
+
 - No existen gates en estado `NO CUMPLIDO`.
 - Estado formal: `PASADA 2E - COMPLETA`.
 
 Evaluacion de salida de caracterizacion del repositorio:
+
 - Pregunta: Existe todavia alguna pregunta critica del AS IS de E444 que pueda responderse exclusivamente leyendo mas codigo/configuracion de este repositorio?
 - Respuesta: NO.
 
 Declaracion de readiness:
+
 - `CARACTERIZACION AS-IS DEL REPOSITORIO E444 - SUFICIENTEMENTE COMPLETA PARA INICIAR FASE DE BASE DE DATOS`.
 
 ## 190. Conclusion PASADA 2E
+
 Conclusion ejecutiva:
+
 1. E444 funciona como una aplicacion monolitica legacy con controles transversales compartidos de autenticacion Windows, sesion InProc, autorizacion por operaciones `OP_*`, logging central y fuerte dependencia de SQL + filesystem.
 2. El modelo de identidad es hibrido AD+BD (grupos AD + mapeo de roles/operaciones en SQL), materializado en `Session["Permisos"]`.
 3. Los dominios Encaje, A10 y BSEC comparten infraestructura y mecanismos tecnicos, pero esa convergencia tecnica no decide boundaries futuros.
@@ -4000,6 +4125,7 @@ Conclusion ejecutiva:
 5. Se separo explicitamente AS IS del baseline frente a evolucion paralela conocida, sin mezclar evidencia de rama alterna.
 
 Constancias metodologicas de esta pasada:
+
 - No se realizo reverse engineering interno de Stored Procedures.
 - No se consulto la base de datos.
 - No se inspecciono SQL Agent.
