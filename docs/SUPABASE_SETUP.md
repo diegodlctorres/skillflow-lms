@@ -37,7 +37,7 @@ Referencia oficial: [API keys](https://supabase.com/docs/guides/getting-started/
 
 ## 4. Probar localmente
 
-Usa Node.js 22.12 o posterior; en Vercel selecciona Node 22 en la configuración del proyecto.
+Usa Node.js 22 LTS (22.12 o posterior dentro de 22.x); en Vercel selecciona Node 22 en la configuración del proyecto.
 
 Copia `.env.example` como `.env.local` en la raíz y sustituye los valores:
 
@@ -72,8 +72,8 @@ Los originales locales permanecen intactos. No hay sincronización automática c
 
 En el proyecto de Vercel:
 
-1. Mantén **Framework Preset: Vite**, **Build Command: `npm run build`**, **Output Directory: `dist`**. El archivo `vercel.json` ya contiene estos ajustes.
-2. En **Settings → Environment Variables**, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`. Marca **Production** y los entornos de Preview/Development que quieras conectar. Si apuntas Preview al mismo Supabase, sus cambios afectan a los mismos documentos.
+1. Mantén **Framework Preset: Vite**, **Install Command: `npm ci --include=dev --include=optional --bin-links=true`**, **Build Command: `npm run build`**, **Output Directory: `dist`** y **Node.js: 22.x**. El archivo `vercel.json` contiene los comandos y el directorio; `package.json` fija Node 22.
+2. En **Settings → Environment Variables**, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` con tipo **Config**, porque son valores públicos del frontend. Marca **Production** y los entornos de Preview/Development que quieras conectar. Si apuntas Preview al mismo Supabase, sus cambios afectan a los mismos documentos.
 3. Publica esta versión y vuelve a desplegar después de cambiar las variables: Vite las incorpora durante la compilación.
 4. Entra desde la URL publicada con la misma cuenta. Tus documentos importados localmente ya estarán allí, sin importarlos de nuevo.
 
@@ -111,6 +111,7 @@ Supabase puede [pausar proyectos gratuitos con poca actividad durante siete día
 | Nombre duplicado | Cambia el nombre o edita el documento existente. Importar omite duplicados. |
 | Conflicto al guardar | Descarga tu borrador, recarga y aplica los cambios sobre la última versión. |
 | Error de conexión | Comprueba red, URL, clave y estado del proyecto en Supabase. |
+| `tsc: command not found` durante el build | Confirma que está publicado el `vercel.json` actualizado: su instalación limpia incluye herramientas de desarrollo y recrea los ejecutables. Revisa overrides del Install Command en Vercel. |
 | Se supera el límite de base de datos | Revisa Usage e historial; no cambies de plan sin evaluar el crecimiento. |
 
 ## Arquitectura y comprobaciones locales

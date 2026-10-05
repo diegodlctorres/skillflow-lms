@@ -4,7 +4,7 @@ Biblioteca privada para consultar, copiar, descargar, crear y editar documentos 
 
 ## Configuración
 
-Requiere Node.js 22.12 o posterior (recomendado: Node 22 LTS).
+Requiere Node.js 22 LTS, versión 22.12 o posterior dentro de la rama 22.x.
 
 Sigue [la guía de Supabase y Vercel](docs/SUPABASE_SETUP.md): crear el proyecto Free, ejecutar [la migración SQL](supabase/migrations/001_document_library.sql), crear una cuenta e importar los originales.
 
