@@ -23,15 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 
-/generated/prisma
-
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Vercel
 .vercel
 
-# Prisma
-/prisma/*.db
-/prisma/*.db-journal
+# Browser verification artifacts
+.verification/

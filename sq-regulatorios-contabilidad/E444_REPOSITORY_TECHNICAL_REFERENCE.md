@@ -906,7 +906,7 @@ Secuencia observable:
 3. `ProcesarReg` aplica regla especial cuando `TipoReporte == "1"`: antes del dia 28, si cae sabado/domingo retorna `"100"`; en otro caso invoca `LCarga.Procesar`.
 4. `LCarga.Procesar` llama `DACarga.Procesar`.
 5. `DACarga.Procesar` ejecuta `EB_CALCULAR_ENCAJE` con timeout 9000 segundos.
-6. JS interpreta respuesta (`"1"` inicio correcto, `"108"` fecha no permitida, otros: proceso en ejecucion).
+6. JS interpreta respuesta (`"1"` inicio correcto, `"100"` fecha no permitida, otros: proceso en ejecucion).
 7. Si inicia, activa flag hidden `Acivar=1` y entra al ciclo de monitoreo.
 
 ## 49. Monitoreo y cierre en Procesar
@@ -970,7 +970,7 @@ Salida del handler:
 
 ## 53. Validaciones de negocio en `ProcesarCarga` (legacy + nuevos casos)
 
-- `CargaInputs.aspx.cs/ProcesarCarga` centraliza validaciones por `NOMARCHIVO`:
+`CargaInputs.aspx.cs/ProcesarCarga` centraliza validaciones por `NOMARCHIVO`:
 - Casos legacy (`TCC`, `SIGA`, `SCE`, `GI03089SC`, `GI03585R`) retornan codigos historicos (2..9,100) por desalineaciones de fecha/estructura.
 - `CREDITO_REACTIVA` y `CREDITOS_ME/MN` leen XLSX, validan periodo y luego persisten en tabla objetivo.
 - Si `valreturn != 1`, corta flujo y retorna ese codigo.
